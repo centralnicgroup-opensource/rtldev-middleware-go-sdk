@@ -14,9 +14,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hexonet/apiconnector/client/socketcfg"
-	"github.com/hexonet/apiconnector/response/hashresponse"
-	"github.com/hexonet/apiconnector/response/listresponse"
+	"github.com/hexonet/go-sdk/client/socketcfg"
+	"github.com/hexonet/go-sdk/response/hashresponse"
+	"github.com/hexonet/go-sdk/response/listresponse"
 )
 
 // Client is the entry point class for communicating with the insanely fast 1API backend api.
