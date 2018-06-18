@@ -1,4 +1,4 @@
-# ispapi-lib-go
+# go-sdk
 
 This module is a connector library for the insanely fast 1API Backend API. For further informations visit our [homepage](http://1api.net) and do not hesitate to contact us.
 
@@ -10,7 +10,7 @@ VS Studio Code will ask you to install some plugins when you start developing a 
 
 ## Getting Started
 
-Clone the git repository by `git clone ssh://git@gitlab.hexonet.net:44447/hexonet-middleware/ispapi-lib-go.git`.
+Clone the git repository by `git clone https://github.com/hexonet/go-sdk`.
 
 ### For development purposes
 
@@ -33,12 +33,12 @@ Simply make a PR / merge request.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gitlab.hexonet.net/hexonet-middleware/ispapi-lib-go/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/hexonet/go-sdk/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
 Our future plan:
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.hexonet.net/hexonet-middleware/ispapi-lib-go/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/hexonet/go-sdk/tags).
 
 As GO doesn't support versioning out of the box up to now, we suggest you save a copy of our module locally and use that copy.
 That's the way google is also using it internally. We can not ensure that our repository module source code may not change and break (what we would basically call a major release).
@@ -47,7 +47,7 @@ That's the way google is also using it internally. We can not ensure that our re
 
 * **Kai Schwarz** - *lead development* - [PapaKai](https://github.com/papakai)
 
-See also the list of [contributors](https://gitlab.hexonet.net/hexonet-middleware/ispapi-lib-go/graphs/master) who participated in this project.
+See also the list of [contributors](https://github/hexonet/go-sdk/graphs/contributors) who participated in this project.
 
 ## License
 
