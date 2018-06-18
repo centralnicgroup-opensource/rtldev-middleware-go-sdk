@@ -7,7 +7,7 @@
 package listresponse
 
 import (
-	"github.com/hexonet/apiconnector/response/hashresponse"
+	"github.com/hexonet/go-sdk/response/hashresponse"
 )
 
 // ListResponse class provides extra functionality to work with API responses.
