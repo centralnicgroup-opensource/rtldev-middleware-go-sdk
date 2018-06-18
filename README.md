@@ -1,6 +1,6 @@
 # go-sdk
 
-This module is a connector library for the insanely fast 1API Backend API. For further informations visit our [homepage](http://1api.net) and do not hesitate to contact us.
+This module is a connector library for the insanely fast HEXONET Backend API. For further informations visit our [homepage](http://hexonet.net) and do not hesitate to contact us.
 
 ## Requirements
 
