@@ -61,7 +61,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 package main
 
 import (
-    "apiconnector/client"
+    "github.com/hexonet/go-sdk/client"
     "fmt"
 )
 
@@ -99,7 +99,7 @@ func main() {
     package main
 
 import (
-    "apiconnector/client"
+    "github.com/hexonet/go-sdk/client"
     "fmt"
 )
 
