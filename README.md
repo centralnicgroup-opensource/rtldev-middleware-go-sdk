@@ -40,11 +40,7 @@ Please read [CONTRIBUTING.md](https://github.com/hexonet/go-sdk/blob/master/CONT
 
 ## Versioning
 
-Our future plan:
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/hexonet/go-sdk/tags).
-
-As GO doesn't support versioning out of the box up to now, we suggest you save a copy of our module locally and use that copy.
-That's the way google is also using it internally. We can not ensure that our repository module source code may not change and break (what we would basically call a major release).
 
 ## Authors
 
