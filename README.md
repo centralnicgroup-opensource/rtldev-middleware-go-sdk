@@ -124,6 +124,8 @@ func main() {
 Run `godoc -http=:6060` on command line and access it via [http://localhost:6060](http://localhost:6060).
 Navigate to "packages" > "apiconnector".
 
+Alternative: See our SDK @ [GoDoc.org](https://godoc.org/github.com/hexonet/go-sdk)
+
 ## Resources
 
 ... the above go documentation server that comes also with further informations around GO.
