@@ -19,8 +19,10 @@ Now you can already start working on the project.
 
 ### How to use this module in your project
 
-Create a copy of our module on your local disk to ensure no updates will come in as it may break because of a new major release coming with breaking changes. GO doesn't support versioning up to now out of the box.
-Import the archive in your project as shown in the examples below.
+Use [govendor](https://github.com/kardianos/govendor) for the dependency installation: `govendor fetch github.com/hexonet/go-sdk@<tag id>`. You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`.
+The dependencies will be installed in subfolder "vendor". Import the module in your project as shown in the examples below.
+
+For more details on govendor, please read the [CheatSheet](https://github.com/kardianos/govendor/wiki/Govendor-CheatSheet) and also the [developer guide](https://github.com/kardianos/govendor/blob/master/doc/dev-guide.md). Knowing about the latter one is very important.
 
 ## Development
 
