@@ -1,5 +1,9 @@
 # go-sdk
 
+[![GoDoc](https://godoc.org/github.com/hexonet/go-sdk?status.svg)](https://godoc.org/github.com/hexonet/go-sdk)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hexonet/go-sdk)](https://goreportcard.com/report/github.com/hexonet/go-sdk)
+[![cover.run](https://cover.run/go/github.com/hexonet/go-sdk.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=github.com%2Fhexonet%2Fgo-sdk)
+
 This module is a connector library for the insanely fast HEXONET Backend API. For further informations visit our [homepage](http://hexonet.net) and do not hesitate to contact us.
 
 ## Requirements
