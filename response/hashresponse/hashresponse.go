@@ -52,7 +52,7 @@ func (hr *HashResponse) GetRaw() string {
 }
 
 // GetRawByFilter method to return the api raw response data.
-// Use noColumnFilter parameter to explicitely suppress a current active column filter.
+// Use noColumnFilter parameter to explicitly suppress a current active column filter.
 func (hr *HashResponse) GetRawByFilter(noColumnFilter bool) string {
 	if noColumnFilter || !hr.columnFilterActive {
 		return hr.raw
