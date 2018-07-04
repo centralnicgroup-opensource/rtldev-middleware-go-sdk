@@ -5,13 +5,21 @@
 [![cover.run](https://cover.run/go/github.com/hexonet/go-sdk.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=github.com%2Fhexonet%2Fgo-sdk)
 [![Slack Widget](https://camo.githubusercontent.com/984828c0b020357921853f59eaaa65aaee755542/68747470733a2f2f73332e65752d63656e7472616c2d312e616d617a6f6e6177732e636f6d2f6e6774756e612f6a6f696e2d75732d6f6e2d736c61636b2e706e67)](https://hexonet-sdk.slack.com/messages/CBFHLTL2X)
 
-This module is a connector library for the insanely fast HEXONET Backend API. For further informations visit our [homepage](http://hexonet.net) and do not hesitate to contact us.
+This module is a connector library for the insanely fast HEXONET Backend API. For further informations visit our [homepage](http://hexonet.net) and do not hesitate to [contact us](https://www.hexonet.net/contact).
+
+## Resources
+
+* [Usage Guide](https://github.com/hexonet/go-sdk/blob/master/README.md#how-to-use-this-module-in-your-project)
+* [SDK Documenation](https://godoc.org/github.com/hexonet/go-sdk)
+* [HEXONET Backend API Documentation](https://github.com/hexonet/hexonet-api-documentation/tree/master/API)
+* [Release Notes](https://github.com/hexonet/go-sdk/releases)
+* [Development Guide](https://github.com/hexonet/go-sdk/wiki/Development-Guide)
+
+## How to use this module in your project
 
 ## Requirements
 
 Installed GO on OS-side as described [here](https://golang.org/doc/install). Restart your machine after installing GO.
-For developers: Visual Studio Code with installed plugin for Go Development described [here](https://code.visualstudio.com/docs/languages/go).
-VS Studio Code will ask you to install some plugins when you start developing a .go file e.g.: gopkgs, goreturns, gocode. Just confirm!
 
 ## Getting Started
 
