@@ -1,9 +1,10 @@
 package test
 
 import (
-	"apiconnector/client"
 	"strings"
 	"testing"
+
+	"github.com/hexonet/go-sdk/client"
 )
 
 func TestReadme1(t *testing.T) {

@@ -1,9 +1,10 @@
 package test
 
 import (
-	"apiconnector/response/hashresponse"
 	"strings"
 	"testing"
+
+	"github.com/hexonet/go-sdk/response/hashresponse"
 )
 
 func TestTemplateGetter(t *testing.T) {

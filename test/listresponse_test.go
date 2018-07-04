@@ -1,8 +1,9 @@
 package test
 
 import (
-	lr "apiconnector/response/listresponse"
 	"testing"
+
+	lr "github.com/hexonet/go-sdk/response/listresponse"
 )
 
 func TestGetList(t *testing.T) {

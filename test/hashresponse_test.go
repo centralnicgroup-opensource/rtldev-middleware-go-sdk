@@ -1,9 +1,10 @@
 package test
 
 import (
-	hr "apiconnector/response/hashresponse"
 	"strings"
 	"testing"
+
+	hr "github.com/hexonet/go-sdk/response/hashresponse"
 )
 
 func TestGetRaw(t *testing.T) {

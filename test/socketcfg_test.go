@@ -1,9 +1,10 @@
 package test
 
 import (
-	"apiconnector/client/socketcfg"
 	"strings"
 	"testing"
+
+	"github.com/hexonet/go-sdk/client/socketcfg"
 )
 
 func TestSetCredentials(t *testing.T) {
