@@ -17,57 +17,22 @@ This module is a connector library for the insanely fast HEXONET Backend API. Fo
 
 ## How to use this module in your project
 
-## Requirements
+### Requirements
 
-Installed GO on OS-side as described [here](https://golang.org/doc/install). Restart your machine after installing GO.
+* Installed [GO/GOLANG](https://golang.org/doc/install). Restart your machine after installing GO.
+* Installed [govendor](https://github.com/kardianos/govendor).
 
-## Getting Started
+### Install using govendor
 
-Clone the git repository into your standard go folder structure by  `go get github.com/hexonet/go-sdk`.
-We have also a demo app available showing how to integrate and use our SDK. See [here](https://github.com/hexonet/go-sdk-demo).
-
-### For development purposes
-
-Now you can already start working on the project.
-
-### How to use this module in your project
-
-Use [govendor](https://github.com/kardianos/govendor) for the dependency installation: `govendor fetch github.com/hexonet/go-sdk@<tag id>`. You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`.
-The dependencies will be installed in subfolder "vendor". Import the module in your project as shown in the examples below.
+Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch github.com/hexonet/go-sdk@<tag id>`. You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
 
 For more details on govendor, please read the [CheatSheet](https://github.com/kardianos/govendor/wiki/Govendor-CheatSheet) and also the [developer guide](https://github.com/kardianos/govendor/blob/master/doc/dev-guide.md). Knowing about the latter one is very important.
 
-## Development
+### Usage Examples
 
-## Run Tests
+Please have an eye on our [HEXONET Backend API documentation](https://github.com/hexonet/hexonet-api-documentation/tree/master/API). Here you can find information on available Commands and their response data.
 
-Go to subfolder "test" and run `go test`.
-
-### Release an Update
-
-Simply make a PR / merge request.
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://github.com/hexonet/go-sdk/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/hexonet/go-sdk/tags).
-
-## Authors
-
-* **Kai Schwarz** - *lead development* - [PapaKai](https://github.com/papakai)
-
-See also the list of [contributors](https://github/hexonet/go-sdk/graphs/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
-## How-to-use Examples
-
-### Session based API Communication
+#### Session based API Communication
 
 ```go
 package main
@@ -105,7 +70,7 @@ func main() {
 }
 ```
 
-### Sessionless API Communication
+#### Sessionless API Communication
 
 ```go
     package main
@@ -131,16 +96,16 @@ func main() {
 }
 ```
 
-## Documentation
+## Contributing
 
-Run `godoc -http=:6060` on command line and access it via [http://localhost:6060](http://localhost:6060).
-Navigate to "packages" > "apiconnector".
+Please read [our development guide](https://github.com/hexonet/go-sdk/wiki/Development-Guide) for details on our code of conduct, and the process for submitting pull requests to us.
 
-Alternative: See our SDK @ [GoDoc.org](https://godoc.org/github.com/hexonet/go-sdk)
+## Authors
 
-## Resources
+* **Kai Schwarz** - *lead development* - [PapaKai](https://github.com/papakai)
 
-... the above go documentation server that comes also with further informations around GO.
-[Learn Go in Y Minutes](https://learnxinyminutes.com/docs/go/)
-[An Introduction to Programming in GO](https://www.golang-book.com/books/intro)
-[Go by Example](https://gobyexample.com/)
+See also the list of [contributors](https://github/hexonet/go-sdk/graphs/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
