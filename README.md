@@ -22,7 +22,7 @@ This module is a connector library for the insanely fast HEXONET Backend API. Fo
 * Installed [GO/GOLANG](https://golang.org/doc/install). Restart your machine after installing GO.
 * Installed [govendor](https://github.com/kardianos/govendor).
 
-### Install using govendor
+### Using govendor
 
 Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch github.com/hexonet/go-sdk@<tag id>`. You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
 
