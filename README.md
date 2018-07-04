@@ -17,6 +17,8 @@ This module is a connector library for the insanely fast HEXONET Backend API. Fo
 
 ## How to use this module in your project
 
+We have also a demo app available showing how to integrate and use our SDK. See [here](https://github.com/hexonet/go-sdk-demo).
+
 ### Requirements
 
 * Installed [GO/GOLANG](https://golang.org/doc/install). Restart your machine after installing GO.
