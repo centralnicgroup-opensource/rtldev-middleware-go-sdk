@@ -35,7 +35,7 @@ Then reload the profile configuration by `source ~/.profile`.
 
 ### Using govendor
 
-Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch github.com/hexonet/go-sdk@<tag id>`. You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
+Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch github.com/hexonet/go-sdk@<tag id>` where *tag id* corresponds to a [release version tag](https://github.com/hexonet/go-sdk/releases). You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
 
 For more details on govendor, please read the [CheatSheet](https://github.com/kardianos/govendor/wiki/Govendor-CheatSheet) and also the [developer guide](https://github.com/kardianos/govendor/blob/master/doc/dev-guide.md). Knowing about the latter one is very important.
 
