@@ -24,13 +24,14 @@ We have also a demo app available showing how to integrate and use our SDK. See 
 * Installed [GO/GOLANG](https://golang.org/doc/install). Restart your machine after installing GO.
 * Installed [govendor](https://github.com/kardianos/govendor).
 
-NOTE: Make sure you add the go binary path to your PATH environment variable. Add the below lines for a standard installation into the terminal configuration file (~/.bashrc for bash, ~/.zshrc for zsh).
+NOTE: Make sure you add the go binary path to your PATH environment variable. Add the below lines for a standard installation into your profile configuration file (~/.profile).
 
 ```bash
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 ```
 
+Then reload the profile configuration by `source ~/.profile`.
 
 ### Using govendor
 
