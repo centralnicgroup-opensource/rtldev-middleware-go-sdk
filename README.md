@@ -115,7 +115,7 @@ Please read [our development guide](https://github.com/hexonet/go-sdk/wiki/Devel
 
 * **Kai Schwarz** - *lead development* - [PapaKai](https://github.com/papakai)
 
-See also the list of [contributors](https://github/hexonet/go-sdk/graphs/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/hexonet/go-sdk/graphs/contributors) who participated in this project.
 
 ## License
 
