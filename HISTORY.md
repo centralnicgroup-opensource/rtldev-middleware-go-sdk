@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.2.0](https://github.com/hexonet/go-sdk/compare/v1.1.0...v1.2.0) (2 August 2018)
+
+- added debugMode; possibility to enable debug output [`a46d0cf`](https://github.com/hexonet/go-sdk/commit/a46d0cfefaafec10bfaac536be7cbe365d837eaf)
+- updated changelog [`3ae8d48`](https://github.com/hexonet/go-sdk/commit/3ae8d48d1dbf989d714ff206f84dac8c7858a98b)
+- HM-329 change changelog template [`689b56e`](https://github.com/hexonet/go-sdk/commit/689b56ee2a9cf53604e7c835879fb635999da94c)
+- Add missing -tree option to govendor fetch command [`b6b0108`](https://github.com/hexonet/go-sdk/commit/b6b01080ead0752d5f27e8d0e6a7215250cbd13a)
+- Update README.md [`203d8a0`](https://github.com/hexonet/go-sdk/commit/203d8a0abdc88ab5a06aeae8a3a70c9f9489f381)
+
 #### [v1.1.0](https://github.com/hexonet/go-sdk/compare/v1.0.1...v1.1.0) (4 July 2018)
 
 - updated tests; added scripts; changelog [`9415d4e`](https://github.com/hexonet/go-sdk/commit/9415d4e8f9e0db44fc252b43dbac5e021d988943)
