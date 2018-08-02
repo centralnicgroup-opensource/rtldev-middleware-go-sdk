@@ -57,6 +57,7 @@ func main() {
     cl := client.NewClient()
     cl.SetCredentials("test.user", "test.passw0rd", "")//username, password, otp code (2FA)
     cl.UseOTESystem()
+    // cl.EnableDebugMode() // to activate debug outputs of the API communication
     r := cl.Login()
     if r.IsSuccess() {
         fmt.Println("Login succeeded.")
