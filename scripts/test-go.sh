@@ -6,6 +6,5 @@ echo
 echo "==> Running automated tests <=="
 cd test
 go test
-cd ..
-
+cd .. || exit
 exit

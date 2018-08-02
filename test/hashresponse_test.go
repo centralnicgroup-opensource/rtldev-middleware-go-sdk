@@ -251,10 +251,10 @@ func TestGetColumnKeys(t *testing.T) {
 	if len(colKeys) != 2 {
 		t.Error("TestGetColumnKeys: amount of columns differs")
 	}
-	if colKeys[0] != "CREATEDDATE" {
+	if colKeys[0] != "CREATEDDATE" && colKeys[0] != "FINALIZATIONDATE" {
 		t.Error("TestGetColumnKeys: column name for index 0 differs")
 	}
-	if colKeys[1] != "FINALIZATIONDATE" {
+	if colKeys[1] != "FINALIZATIONDATE" && colKeys[1] != "CREATEDDATE" {
 		t.Error("TestGetColumnKeys: column name for index 1 differs")
 	}
 }

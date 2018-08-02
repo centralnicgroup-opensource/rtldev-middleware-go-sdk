@@ -7,6 +7,8 @@
 package client
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -33,6 +35,7 @@ import (
 //
 // Possible commands can be found at https://github.com/hexonet/hexonet-api-documentation/tree/master/API
 type Client struct {
+	debugMode     bool
 	socketTimeout int
 	apiurl        string
 	socketcfg.Socketcfg
@@ -42,6 +45,7 @@ type Client struct {
 // The client is by default set to communicate with the LIVE system. Use method UseOTESystem to switch to the OT&E system instance.
 func NewClient() *Client {
 	cl := &Client{
+		debugMode:     false,
 		socketTimeout: 300000,
 		apiurl:        "https://coreapi.1api.net/api/call.cgi",
 		Socketcfg:     socketcfg.Socketcfg{},
@@ -108,12 +112,32 @@ func (c *Client) UseOTESystem() {
 	c.Socketcfg.SetEntity("1234")
 }
 
+// EnableDebugMode method to enable debugMode for debug output
+func (c *Client) EnableDebugMode() {
+	c.debugMode = true
+}
+
+// DisableDebugMode method to disable debugMode for debug output
+func (c *Client) DisableDebugMode() {
+	c.debugMode = false
+}
+
 // Request method requests the given command to the api server and returns the response as ListResponse.
 func (c *Client) Request(cmd map[string]string) *listresponse.ListResponse {
 	if c.Socketcfg == (socketcfg.Socketcfg{}) {
 		return listresponse.NewListResponse(hashresponse.NewTemplates().Get("expired"))
 	}
 	return c.dorequest(cmd, &c.Socketcfg)
+}
+
+// debugRequest method used to trigger debug output in case debugMode is activated
+func (c *Client) debugRequest(cmd map[string]string, data string, r *listresponse.ListResponse) {
+	if c.debugMode {
+		j, _ := json.Marshal(cmd)
+		fmt.Printf("%s\n", j)
+		fmt.Println("POST: " + data)
+		fmt.Println(strconv.Itoa(r.Code()) + " " + r.Description() + "\n")
+	}
 }
 
 // RequestAll method requests ALL entries matching the request criteria by the given command from api server.
@@ -141,7 +165,9 @@ func (c *Client) dorequest(cmd map[string]string, cfg *socketcfg.Socketcfg) *lis
 	if err != nil {
 		tpl := hashresponse.NewTemplates().Get("commonerror")
 		tpl = strings.Replace(tpl, "####ERRMSG####", err.Error(), 1)
-		return listresponse.NewListResponse(tpl)
+		r := listresponse.NewListResponse(tpl)
+		c.debugRequest(cmd, data, r)
+		return r
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Expect", "")
@@ -149,7 +175,9 @@ func (c *Client) dorequest(cmd map[string]string, cfg *socketcfg.Socketcfg) *lis
 	if err2 != nil {
 		tpl := hashresponse.NewTemplates().Get("commonerror")
 		tpl = strings.Replace(tpl, "####ERRMSG####", err2.Error(), 1)
-		return listresponse.NewListResponse(tpl)
+		r := listresponse.NewListResponse(tpl)
+		c.debugRequest(cmd, data, r)
+		return r
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
@@ -157,13 +185,19 @@ func (c *Client) dorequest(cmd map[string]string, cfg *socketcfg.Socketcfg) *lis
 		if err != nil {
 			tpl := hashresponse.NewTemplates().Get("commonerror")
 			tpl = strings.Replace(tpl, "####ERRMSG####", err.Error(), 1)
-			return listresponse.NewListResponse(tpl)
+			r := listresponse.NewListResponse(tpl)
+			c.debugRequest(cmd, data, r)
+			return r
 		}
-		return listresponse.NewListResponse(string(response))
+		r := listresponse.NewListResponse(string(response))
+		c.debugRequest(cmd, data, r)
+		return r
 	}
 	tpl := hashresponse.NewTemplates().Get("commonerror")
 	tpl = strings.Replace(tpl, "####ERRMSG####", string(resp.StatusCode)+resp.Status, 1)
-	return listresponse.NewListResponse(tpl)
+	r := listresponse.NewListResponse(tpl)
+	c.debugRequest(cmd, data, r)
+	return r
 }
 
 // Login method to use as entry point for session based communication.

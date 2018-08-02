@@ -12,6 +12,7 @@ func TestReadme1(t *testing.T) {
 	cl := client.NewClient()
 	cl.SetCredentials("test.user", "test.passw0rd", "")
 	cl.UseOTESystem()
+	cl.EnableDebugMode()
 	r := cl.Login()
 	if r.IsSuccess() {
 		cmd := map[string]string{
