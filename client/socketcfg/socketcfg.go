@@ -22,6 +22,13 @@ type Socketcfg struct {
 	otp        string
 }
 
+// SetIPAddress method to set remote ip address to be submitted to the HEXONET API.
+// This ip address is being considered when you have ip filter settings activated.
+// To reset this, simply provide an empty string as parameter.
+func (s *Socketcfg) SetIPAddress(ip string) {
+	s.remoteaddr = ip
+}
+
 // SetCredentials method to set username and password to use for api communication
 func (s *Socketcfg) SetCredentials(username string, password string, otpcode string) {
 	s.login = username

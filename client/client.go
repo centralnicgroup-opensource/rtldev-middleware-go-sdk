@@ -92,6 +92,11 @@ func (c *Client) SetCredentials(username string, password string, otpcode string
 	c.Socketcfg.SetCredentials(username, password, otpcode)
 }
 
+// SetIPAddress method to set api client to submit this ip address in api communication
+func (c *Client) SetIPAddress(ip string) {
+	c.Socketcfg.SetIPAddress(ip)
+}
+
 // SetSubuserView method to activate the use of a subuser account as data view
 func (c *Client) SetSubuserView(username string) {
 	c.Socketcfg.SetUser(username)
