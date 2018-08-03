@@ -57,6 +57,11 @@ func main() {
     cl := client.NewClient()
     cl.SetCredentials("test.user", "test.passw0rd", "")//username, password, otp code (2FA)
     cl.UseOTESystem()
+    
+    // use this to provide your outgoing ip address for api communication
+    // to be used in case you have ip filter settings active
+    // cl.SetIPAddress("174.21.132.16");
+    
     // cl.EnableDebugMode() // to activate debug outputs of the API communication
     r := cl.Login()
     if r.IsSuccess() {
