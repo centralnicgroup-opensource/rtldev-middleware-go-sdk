@@ -49,18 +49,19 @@ Please have an eye on our [HEXONET Backend API documentation](https://github.com
 package main
 
 import (
-    "github.com/hexonet/go-sdk/client"
     "fmt"
+    
+    CL "github.com/hexonet/go-sdk/apiclient"
 )
 
 func main() {
-    cl := client.NewClient()
+    cl := CL.NewAPIClient()
     cl.SetCredentials("test.user", "test.passw0rd", "")//username, password, otp code (2FA)
     cl.UseOTESystem()
 
     // use this to provide your outgoing ip address for api communication
     // to be used in case you have ip filter settings active
-    // cl.SetIPAddress("174.21.132.16");
+    // cl.SetRemoteIPAddress("174.21.132.16");
 
     // cl.EnableDebugMode() // to activate debug outputs of the API communication
     r := cl.Login()
@@ -93,12 +94,13 @@ func main() {
     package main
 
 import (
-    "github.com/hexonet/go-sdk/client"
     "fmt"
+    
+    CL "github.com/hexonet/go-sdk/apiclient"
 )
 
 func main() {
-    cl := client.NewClient()
+    cl := CL.NewAPIClient()
     cl.SetCredentials("test.user", "test.passw0rd", "")
     cl.UseOTESystem()
     cmd := map[string]string{
