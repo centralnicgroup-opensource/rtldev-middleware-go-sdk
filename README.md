@@ -91,7 +91,7 @@ func main() {
 #### Sessionless API Communication
 
 ```go
-    package main
+package main
 
 import (
     "fmt"
