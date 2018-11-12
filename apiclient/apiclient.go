@@ -113,7 +113,7 @@ func (cl *APIClient) GetURL() string {
 
 // GetVersion method to get current module version
 func (cl *APIClient) GetVersion() string {
-	return "2.0.0"
+	return "2.0.1"
 }
 
 // SaveSession method to apply data to a session for later reuse
