@@ -13,6 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# -----------------------------------------------
+# gofmt -s -w <file> might help in case of issues
+# -----------------------------------------------
+
 set -euo pipefail
 
 exit_code=0

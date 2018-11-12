@@ -1,0 +1,36 @@
+language: go
+sudo: false
+dist: trusty
+notifications:
+  email:
+    recipients:
+    - kschwarz@hexonet.net
+    on_success: never
+    on_failure: always
+  slack:
+    rooms:
+      secure: OTOs5GKpXO5YpIn/fIeRDYbovdXRscDnttEHclE7AFhi76sHAxFSW/RSPcyX3kjsewaPYahsUgs6fATXDHDX4UNW6b32x0UKxmaAXGn37om1An31NXKZ1XdhlTv47EPqQbK6ezeYJXo3tH/uFedGn/WM4AAhKfioGqRsuXfp+IXvNWApuzdQIe4u/ZTVd4PhVSpjM5yc9+m+I8/gx/JwG+f+dL1/t8yJr2dm1ejvSyyJgV0FQGDzCwSJLlpFrkMTBY0NzPQFvwkTq/QCEkMORJ95KHwIpUbHrK3Rgp581VDnqr6K/PsgpRRxaGi1qY+N+VC4OIUA4IQDQLmgzczJ7PiPl0rK98wopfpargzMer6Ov4QP/owBmvt1WXLrRrLdHXo1jvXZnwhG12CvySdQft+l3WBfKzGhpLMpfcvY/z9zlCst9a7Bw8ghy5mkmCoZdWrdOAKF7j0Kyjdc5GPin6sGZzlY3XB9fcqD+IoeeFsbpPsxXpABB0WwoRRd08Xxhidm0sRehA4ynzEYNcCu3CanweOVQn27mPZ0KDgVjWVEAs+1anB2E0sfLoUonJ71uoEzMebkz23ztvb/SF/crCZZUdIw5DcU5c8dyN+464oaduGKl5ZJiSpdOwrF+ZMvEodfgl9ZdgqgF/QO9bNHkd9vnDHo2+e+LrO+GclT6D4=
+    on_success: always
+    on_failure: always
+go:
+- "1.10"
+- "1.11"
+- "1.x"
+- "master"
+cache:
+  directories:
+  - "~/.npm"
+  - node_modules
+install:
+#- composer install
+script:
+- ./scripts/validate-go.sh
+- ./scripts/test-go.sh
+after_success:
+- if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+  git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+  && git fetch --tags && nvm install lts/* && nvm use lts/* && npm prune && npm i
+  && npx travis-deploy-once "npx semantic-release" ; fi
+branches:
+  except:
+  - "/^v\\d+\\.\\d+\\.\\d+$/"
