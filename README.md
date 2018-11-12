@@ -56,15 +56,18 @@ import (
 
 func main() {
     cl := CL.NewAPIClient()
-    cl.SetCredentials("test.user", "test.passw0rd", "")//username, password, otp code (2FA)
+    cl.SetCredentials("test.user", "test.passw0rd")//username, password
+    // or cl.SetRoleCredentials("test.user", "testrole", "test.passw0rd")
+    // for role user credentials
     cl.UseOTESystem()
 
     // use this to provide your outgoing ip address for api communication
     // to be used in case you have ip filter settings active
-    // cl.SetRemoteIPAddress("174.21.132.16");
+    cl.SetRemoteIPAddress("1.2.3.4");
 
     // cl.EnableDebugMode() // to activate debug outputs of the API communication
     r := cl.Login()
+    // or r := cl.Login("12345678") // provide here your 2FA otp code
     if r.IsSuccess() {
         fmt.Println("Login succeeded.")
         cmd := map[string]string{
@@ -101,7 +104,9 @@ import (
 
 func main() {
     cl := CL.NewAPIClient()
-    cl.SetCredentials("test.user", "test.passw0rd", "")
+    cl.SetCredentials("test.user", "test.passw0rd")
+    cl.SetRemoteIPAddress("1.2.3.4")
+    //cl.SetOTP("12345678") to provide your 2FA otp code
     cl.UseOTESystem()
     cmd := map[string]string{
         "COMMAND": "StatusAccount",
