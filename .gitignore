@@ -16,3 +16,6 @@
 # coverage
 coverage.out
 coverage.html
+
+# npm
+node_modules
