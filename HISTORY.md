@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/hexonet/go-sdk/compare/v2.0.1...v2.1.0) (2019-04-03)
+
+
+### Features
+
+* **apiclient:** review user-agent header usage ([ed719e5](https://github.com/hexonet/go-sdk/commit/ed719e5))
+
 ## [2.0.1](https://github.com/hexonet/go-sdk/compare/v2.0.0...v2.0.1) (2018-11-12)
 
 
