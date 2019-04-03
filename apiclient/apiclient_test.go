@@ -3,6 +3,7 @@ package apiclient
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -72,6 +73,24 @@ func TestGetURL(t *testing.T) {
 	url := cl.GetURL()
 	if strings.Compare(url, "https://coreapi.1api.net/api/call.cgi") != 0 {
 		t.Error("TestGetURL: Expected url not matching.")
+	}
+}
+
+func TestGetUserAgent(t *testing.T) {
+	uaexpected := "GO-SDK (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + cl.GetVersion() + ") go/" + runtime.Version()
+	ua := cl.GetUserAgent()
+	if strings.Compare(ua, uaexpected) != 0 {
+		t.Error("TestGetUserAgent: Expected user-agent not matching.")
+	}
+}
+
+func TestSetUserAgent(t *testing.T) {
+	uaid := "WHMCS"
+	uarv := "7.7.0"
+	uaexpected := uaid + " (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + uarv + ") go-sdk/" + cl.GetVersion() + " go/" + runtime.Version()
+	ua := cl.SetUserAgent(uaid, uarv).GetUserAgent()
+	if strings.Compare(ua, uaexpected) != 0 {
+		t.Error("TestGetUserAgent: Expected user-agent not matching.")
 	}
 }
 

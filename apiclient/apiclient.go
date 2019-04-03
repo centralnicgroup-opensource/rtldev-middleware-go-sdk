@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -42,6 +43,7 @@ type APIClient struct {
 	socketURL     string
 	socketConfig  *SC.SocketConfig
 	debugMode     bool
+	ua            string
 }
 
 // NewAPIClient represents the constructor for struct APIClient.
@@ -51,6 +53,7 @@ func NewAPIClient() *APIClient {
 		socketTimeout: 300 * time.Second,
 		socketURL:     "https://coreapi.1api.net/api/call.cgi",
 		socketConfig:  SC.NewSocketConfig(),
+		ua:            "",
 	}
 	cl.UseLIVESystem()
 	return cl
@@ -109,6 +112,20 @@ func (cl *APIClient) GetSession() (string, error) {
 // GetURL method to get the API connection url that is currently set
 func (cl *APIClient) GetURL() string {
 	return cl.socketURL
+}
+
+// SetUserAgent method to customize user-agent header (useful for tools that use our SDK)
+func (cl *APIClient) SetUserAgent(str string, rv string) *APIClient {
+	cl.ua = str + " (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + rv + ") go-sdk/" + cl.GetVersion() + " go/" + runtime.Version()
+	return cl
+}
+
+// GetUserAgent method to return the user agent string
+func (cl *APIClient) GetUserAgent() string {
+	if len(cl.ua) == 0 {
+		cl.ua = "GO-SDK (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + cl.GetVersion() + ") go/" + runtime.Version()
+	}
+	return cl.ua
 }
 
 // GetVersion method to get current module version
@@ -258,7 +275,7 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Expect", "")
-	req.Header.Add("User-Agent", "go-sdk::"+cl.GetVersion())
+	req.Header.Add("User-Agent", cl.GetUserAgent())
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
