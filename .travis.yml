@@ -30,6 +30,3 @@ after_success:
   git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
   && git fetch --tags && nvm install lts/* && nvm use lts/* && npm prune && npm i
   && npx travis-deploy-once "npx semantic-release" ; fi
-branches:
-  except:
-  - "/^v\\d+\\.\\d+\\.\\d+$/"
