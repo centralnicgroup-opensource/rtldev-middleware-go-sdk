@@ -19,7 +19,6 @@ go:
 - "1.10"
 - "1.11"
 - "1.12"
-- "master"
 # Trigger a push build on master and dependabot branches + PRs build on every branches
 # Avoid double build on PRs (See https://github.com/travis-ci/travis-ci/issues/1147)
 branches:
