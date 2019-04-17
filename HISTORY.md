@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/hexonet/go-sdk/compare/v2.1.0...v2.2.0) (2019-04-17)
+
+
+### Features
+
+* **responsetemplate:** add IsPending method ([faa9c4d](https://github.com/hexonet/go-sdk/commit/faa9c4d))
+
 # [2.1.0](https://github.com/hexonet/go-sdk/compare/v2.0.1...v2.1.0) (2019-04-03)
 
 
