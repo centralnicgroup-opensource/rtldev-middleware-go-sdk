@@ -91,3 +91,14 @@ func (rt *ResponseTemplate) IsTmpError() bool {
 	c := rt.GetCode()
 	return (c >= 400 && c <= 499)
 }
+
+//IsPending method to check if current operation is returned as pending
+func (rt *ResponseTemplate) IsPending() bool {
+	h := rt.GetHash()
+	if val, ok := h["PENDING"]; ok {
+		if val.(string) == "1" {
+			return true
+		}
+	}
+	return false
+}

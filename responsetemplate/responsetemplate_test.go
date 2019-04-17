@@ -52,3 +52,17 @@ func TestGetRuntime2(t *testing.T) {
 		t.Error("TestGetRuntime2: Expected runtime not matching")
 	}
 }
+
+func TestIsPending1(t *testing.T) {
+	tpl := NewResponseTemplate("")
+	if tpl.IsPending() {
+		t.Error("TestIsPending1: Expected pending value not matching")
+	}
+}
+
+func TestIsPending2(t *testing.T) {
+	tpl := NewResponseTemplate("[RESPONSE]\r\ncode=423\r\ndescription=Empty API response\r\npending=1\r\nEOF\r\n")
+	if !tpl.IsPending() {
+		t.Error("TestIsPending2: Expected pending value not matching")
+	}
+}
