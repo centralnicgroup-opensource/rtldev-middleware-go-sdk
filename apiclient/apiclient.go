@@ -51,7 +51,7 @@ func NewAPIClient() *APIClient {
 	cl := &APIClient{
 		debugMode:     false,
 		socketTimeout: 300 * time.Second,
-		socketURL:     "https://coreapi.1api.net/api/call.cgi",
+		socketURL:     "https://api.ispapi.net/api/call.cgi",
 		socketConfig:  SC.NewSocketConfig(),
 		ua:            "",
 	}

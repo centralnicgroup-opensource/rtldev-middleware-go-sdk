@@ -71,7 +71,7 @@ func TestGetSesssion2(t *testing.T) {
 
 func TestGetURL(t *testing.T) {
 	url := cl.GetURL()
-	if strings.Compare(url, "https://coreapi.1api.net/api/call.cgi") != 0 {
+	if strings.Compare(url, "https://api.ispapi.net/api/call.cgi") != 0 {
 		t.Error("TestGetURL: Expected url not matching.")
 	}
 }
@@ -95,12 +95,12 @@ func TestSetUserAgent(t *testing.T) {
 }
 
 func TestSetURL(t *testing.T) {
-	newurl := "http://coreapi.1api.net/api/call.cgi"
+	newurl := "http://api.ispapi.net/api/call.cgi"
 	url := cl.SetURL(newurl).GetURL()
 	if strings.Compare(newurl, url) != 0 {
 		t.Error("TestSetURL: Expected url not matching.")
 	}
-	cl.SetURL("https://coreapi.1api.net/api/call.cgi")
+	cl.SetURL("https://api.ispapi.net/api/call.cgi")
 }
 
 func TestSetOTP1(t *testing.T) {
