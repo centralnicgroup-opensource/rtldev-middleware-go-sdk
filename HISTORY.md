@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/hexonet/go-sdk/compare/v2.2.0...v2.2.1) (2019-08-19)
+
+
+### Bug Fixes
+
+* **APIClient:** change default SDK url ([64d89d5](https://github.com/hexonet/go-sdk/commit/64d89d5))
+
 # [2.2.0](https://github.com/hexonet/go-sdk/compare/v2.1.0...v2.2.0) (2019-04-17)
 
 
