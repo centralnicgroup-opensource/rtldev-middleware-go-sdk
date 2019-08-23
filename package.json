@@ -43,7 +43,7 @@
     "@semantic-release/git": "7.0.16",
     "@semantic-release/github": "5.4.3",
     "conventional-changelog": "3.1.10",
-    "semantic-release": "15.13.21"
+    "semantic-release": "15.13.24"
   },
   "release": {
     "debug": false,
