@@ -38,51 +38,8 @@
   ],
   "devDependencies": {
     "@semantic-release/changelog": "^3.0.4",
-    "@semantic-release/commit-analyzer": "^6.2.0",
     "@semantic-release/exec": "^3.3.6",
     "@semantic-release/git": "^7.0.16",
-    "@semantic-release/github": "^5.4.3",
-    "conventional-changelog": "^3.1.10",
     "semantic-release": "^15.13.24"
-  },
-  "release": {
-    "debug": false,
-    "analyzeCommits": {
-      "preset": "angular"
-    },
-    "generateNotes": {
-      "preset": "angular"
-    },
-    "verifyConditions": [
-      "@semantic-release/changelog",
-      "@semantic-release/git",
-      "@semantic-release/github"
-    ],
-    "prepare": [
-      {
-        "path": "@semantic-release/changelog",
-        "changelogFile": "HISTORY.md"
-      },
-      {
-        "path": "@semantic-release/exec",
-        "cmd": "./updateVersion.sh ${nextRelease.version} ${options.branch}"
-      },
-      {
-        "path": "@semantic-release/git",
-        "assets": [
-          "HISTORY.md",
-          "package.json",
-          "apiclient/apiclient.go"
-        ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-      }
-    ],
-    "publish": [
-      "@semantic-release/github"
-    ]
-  },
-  "scripts": {
-    "semantic-release": "semantic-release",
-    "travis-deploy-once": "travis-deploy-once"
   }
 }

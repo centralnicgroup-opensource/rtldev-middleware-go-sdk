@@ -1,0 +1,28 @@
+{
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/changelog",
+            {
+                "changelogFile": "HISTORY.md"
+            }
+        ],
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "./updateVersion.sh ${nextRelease.version} ${options.branch}"
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": [
+                    "HISTORY.md",
+                    "package.json",
+                    "apiclient/apiclient.go"
+                ]
+            }
+        ]
+    ]
+}
