@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/hexonet/go-sdk/compare/v2.2.1...v2.2.2) (2019-09-19)
+
+
+### Bug Fixes
+
+* **release process:** migrate configuration ([a717401](https://github.com/hexonet/go-sdk/commit/a717401))
+
 ## [2.2.1](https://github.com/hexonet/go-sdk/compare/v2.2.0...v2.2.1) (2019-08-19)
 
 
