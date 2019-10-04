@@ -22,7 +22,7 @@ type ResponseTemplate struct {
 // NewResponseTemplate represents the constructor for struct ResponseTemplate.
 func NewResponseTemplate(raw string) *ResponseTemplate {
 	if len(raw) == 0 {
-		raw = "[RESPONSE]\r\nCODE=423\r\nDESCRIPTION=Empty API response\r\nEOF\r\n"
+		raw = "[RESPONSE]\r\nCODE=423\r\nDESCRIPTION=Empty API response. Probably unreachable API end point\r\nEOF\r\n"
 	}
 	rt := &ResponseTemplate{
 		Raw:  raw,
