@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/hexonet/go-sdk/compare/v2.2.2...v2.2.3) (2019-10-04)
+
+
+### Bug Fixes
+
+* **responsetemplate/mgr:** improve description of `423 Empty API response` ([ce11490](https://github.com/hexonet/go-sdk/commit/ce11490))
+
 ## [2.2.2](https://github.com/hexonet/go-sdk/compare/v2.2.1...v2.2.2) (2019-09-19)
 
 
