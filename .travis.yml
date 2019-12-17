@@ -3,32 +3,36 @@ dist: xenial
 notifications:
   email:
     recipients:
-    - middleware@hexonet.net
+      - middleware@hexonet.net
     on_success: never
     on_failure: always
 addons:
   apt:
     update: true
 go:
-- "1.10"
-- "1.11"
-- "1.12"
-- "1.13"
+  - "1.10"
+  - "1.11"
+  - "1.12"
+  - "1.13"
 # Trigger a push build on master and dependabot branches + PRs build on every branches
 # Avoid double build on PRs (See https://github.com/travis-ci/travis-ci/issues/1147)
 branches:
   only:
     - master
     - /^dependabot.*$/
-install:
-#- composer install
 script:
-- ./scripts/validate-go.sh
-- ./scripts/test-go.sh
+  - ./scripts/validate-go.sh
+  - ./scripts/test-go.sh
 jobs:
   include:
     - stage: release
       node_js: lts/*
+      install:
+        - rm -rf ~/.nvm
+        - git clone https://github.com/creationix/nvm.git ~/.nvm
+        - (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`)
+        - source ~/.nvm/nvm.sh
+        - nvm install $TRAVIS_NODE_VERSION
       script:
         - npm prune
         - travis_retry npm i
