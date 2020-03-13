@@ -1,5 +1,5 @@
 language: go
-dist: xenial
+dist: bionic
 notifications:
   email:
     recipients:
@@ -9,18 +9,12 @@ notifications:
 addons:
   apt:
     update: true
-env: GO111MODULE=on GOFLAGS='-mod vendor'
 go:
   - "1.12"
   - "1.13"
-# Trigger a push build on master and dependabot branches + PRs build on every branches
-# Avoid double build on PRs (See https://github.com/travis-ci/travis-ci/issues/1147)
-branches:
-  only:
-    - master
-    - /^dependabot.*$/
 before_script:
   - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.23.8
+  - export PATH="$GOPATH/bin:$PATH"
 script:
   - ./scripts/validate-go.sh
   - ./scripts/test-go.sh
