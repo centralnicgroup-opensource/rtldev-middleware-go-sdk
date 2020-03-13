@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/hexonet/go-sdk/compare/v2.2.3...v2.3.0) (2020-03-13)
+
+
+### Features
+
+* **apiclient:** support bulk parameter in api commands using slices ([c11db41](https://github.com/hexonet/go-sdk/commit/c11db411d22860929a12a4639f0b6422a95e1351))
+
 ## [2.2.3](https://github.com/hexonet/go-sdk/compare/v2.2.2...v2.2.3) (2019-10-04)
 
 
