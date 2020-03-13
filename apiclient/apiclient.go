@@ -13,8 +13,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -73,7 +75,8 @@ func (cl *APIClient) DisableDebugMode() *APIClient {
 
 // GetPOSTData method to Serialize given command for POST request
 // including connection configuration data
-func (cl *APIClient) GetPOSTData(cmd map[string]string) string {
+func (cl *APIClient) GetPOSTData(thecmd map[string]interface{}) string {
+	cmd := cl.flattenCommand(thecmd)
 	data := cl.socketConfig.GetPOSTData()
 	var tmp strings.Builder
 	keys := []string{}
@@ -199,7 +202,7 @@ func (cl *APIClient) Login(params ...string) *R.Response {
 		otp = params[0]
 	}
 	cl.SetOTP(otp)
-	rr := cl.Request(map[string]string{"COMMAND": "StartSession"})
+	rr := cl.Request(map[string]interface{}{"COMMAND": "StartSession"})
 	if rr.IsSuccess() {
 		col := rr.GetColumn("SESSION")
 		if col != nil {
@@ -224,7 +227,7 @@ func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
 	if len(params) > 0 {
 		parameters = params[0].(map[string]string)
 	}
-	cmd := map[string]string{
+	cmd := map[string]interface{}{
 		"COMMAND": "StartSession",
 	}
 	for k, v := range parameters {
@@ -244,7 +247,7 @@ func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
 
 // Logout method to perform API logout to close API session in use
 func (cl *APIClient) Logout() *R.Response {
-	rr := cl.Request(map[string]string{
+	rr := cl.Request(map[string]interface{}{
 		"COMMAND": "EndSession",
 	})
 	if rr.IsSuccess() {
@@ -254,7 +257,8 @@ func (cl *APIClient) Logout() *R.Response {
 }
 
 // Request method to perform API request using the given command
-func (cl *APIClient) Request(cmd map[string]string) *R.Response {
+func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
+	newcmd := cl.flattenCommand(cmd)
 	data := cl.GetPOSTData(cmd)
 
 	client := &http.Client{
@@ -263,9 +267,9 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 	req, err := http.NewRequest("POST", cl.socketURL, strings.NewReader(data))
 	if err != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
-		r := R.NewResponse(tpl, cmd)
+		r := R.NewResponse(tpl, newcmd)
 		if cl.debugMode {
-			j, _ := json.Marshal(cmd)
+			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
 			fmt.Println("POST: " + data)
 			fmt.Println("HTTP communication failed: " + err.Error())
@@ -279,9 +283,9 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
-		r := R.NewResponse(tpl, cmd)
+		r := R.NewResponse(tpl, newcmd)
 		if cl.debugMode {
-			j, _ := json.Marshal(cmd)
+			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
 			fmt.Println("POST: " + data)
 			fmt.Println("HTTP communication failed: " + err2.Error())
@@ -294,9 +298,9 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 		response, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			tpl := rtm.GetTemplate("httperror").GetPlain()
-			r := R.NewResponse(tpl, cmd)
+			r := R.NewResponse(tpl, newcmd)
 			if cl.debugMode {
-				j, _ := json.Marshal(cmd)
+				j, _ := json.Marshal(newcmd)
 				fmt.Printf("%s\n", j)
 				fmt.Println("POST: " + data)
 				fmt.Println("HTTP communication failed: " + err.Error())
@@ -304,9 +308,9 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 			}
 			return r
 		}
-		r := R.NewResponse(string(response), cmd)
+		r := R.NewResponse(string(response), newcmd)
 		if cl.debugMode {
-			j, _ := json.Marshal(cmd)
+			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
 			fmt.Println("POST: " + data)
 			fmt.Println(r.GetPlain())
@@ -314,9 +318,9 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 		return r
 	}
 	tpl := rtm.GetTemplate("httperror").GetPlain()
-	r := R.NewResponse(tpl, cmd)
+	r := R.NewResponse(tpl, newcmd)
 	if cl.debugMode {
-		j, _ := json.Marshal(cmd)
+		j, _ := json.Marshal(newcmd)
 		fmt.Printf("%s\n", j)
 		fmt.Println("POST: " + data)
 		fmt.Println(r.GetPlain())
@@ -327,7 +331,10 @@ func (cl *APIClient) Request(cmd map[string]string) *R.Response {
 // RequestNextResponsePage method to request the next page of list entries for the current list query
 // Useful for lists
 func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error) {
-	mycmd := cl.toUpperCaseKeys(rr.GetCommand())
+	mycmd := map[string]interface{}{}
+	for key, val := range cl.toUpperCaseKeys(rr.GetCommand()) {
+		mycmd[key] = val
+	}
 	if _, ok := mycmd["LAST"]; ok {
 		return nil, errors.New("Parameter LAST in use. Please remove it to avoid issues in requestNextPage")
 	}
@@ -351,9 +358,8 @@ func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error
 func (cl *APIClient) RequestAllResponsePages(cmd map[string]string) []R.Response {
 	var err error
 	responses := []R.Response{}
-	mycmd := map[string]string{
-		"FIRST": "0",
-	}
+	mycmd := map[string]interface{}{}
+	mycmd["FIRST"] = "0"
 	for k, v := range cmd {
 		mycmd[k] = v
 	}
@@ -399,6 +405,27 @@ func (cl *APIClient) toUpperCaseKeys(cmd map[string]string) map[string]string {
 	newcmd := map[string]string{}
 	for k, v := range cmd {
 		newcmd[strings.ToUpper(k)] = v
+	}
+	return newcmd
+}
+
+// flattenCommand method to translate all command parameter names to uppercase
+func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]string {
+	newcmd := map[string]string{}
+	for key, val := range cmd {
+		if reflect.TypeOf(val).Kind() == reflect.Slice {
+			v := val.([]string)
+			for idx, str := range v {
+				str = strings.Replace(str, "\r", "", -1)
+				str = strings.Replace(str, "\n", "", -1)
+				newcmd[key+strconv.Itoa(idx)] = str
+			}
+		} else {
+			val := val.(string)
+			val = strings.Replace(val, "\r", "", -1)
+			val = strings.Replace(val, "\n", "", -1)
+			newcmd[key] = val
+		}
 	}
 	return newcmd
 }

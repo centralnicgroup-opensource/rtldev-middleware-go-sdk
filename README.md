@@ -52,7 +52,7 @@ package main
 
 import (
     "fmt"
-    
+
     CL "github.com/hexonet/go-sdk/apiclient"
 )
 
@@ -72,10 +72,9 @@ func main() {
     // or r := cl.Login("12345678") // provide here your 2FA otp code
     if r.IsSuccess() {
         fmt.Println("Login succeeded.")
-        cmd := map[string]string{
-            "COMMAND": "StatusAccount",
-        }
-        r = cl.Request(cmd)
+        r = cl.Request(map[string]interface{}{
+            "COMMAND": "StatusAccount"
+        })
         if r.IsSuccess() {
             fmt.Println("Command succeeded.")
             r = cl.Logout()
@@ -100,7 +99,7 @@ package main
 
 import (
     "fmt"
-    
+
     CL "github.com/hexonet/go-sdk/apiclient"
 )
 
@@ -110,10 +109,71 @@ func main() {
     cl.SetRemoteIPAddress("1.2.3.4")
     //cl.SetOTP("12345678") to provide your 2FA otp code
     cl.UseOTESystem()
-    cmd := map[string]string{
-        "COMMAND": "StatusAccount",
+    r := cl.Request(map[string]interface{}{
+        "COMMAND": "StatusAccount"
+    })
+    if r.IsSuccess() {
+        fmt.Println("Command succeeded.")
+    } else {
+        fmt.Println("Command failed.")
     }
-    r := cl.Request(cmd)
+}
+```
+
+#### Using Bulk Parameters in API Command
+
+Of course, you could do the following:
+
+```go
+package main
+
+import (
+    "fmt"
+
+    CL "github.com/hexonet/go-sdk/apiclient"
+)
+
+func main() {
+    cl := CL.NewAPIClient()
+    cl.SetCredentials("test.user", "test.passw0rd")
+    cl.SetRemoteIPAddress("1.2.3.4")
+    cl.UseOTESystem()
+    r := cl.Request(map[string]interface{}{
+        "COMMAND": "QueryDomainOptions",
+        "DOMAIN0": "example1.com";
+        "DOMAIN1": "example2.com";
+    })
+    if r.IsSuccess() {
+        fmt.Println("Command succeeded.")
+    } else {
+        fmt.Println("Command failed.")
+    }
+}
+```
+
+but probably better:
+
+```go
+package main
+
+import (
+    "fmt"
+
+    CL "github.com/hexonet/go-sdk/apiclient"
+)
+
+func main() {
+    cl := CL.NewAPIClient()
+    cl.SetCredentials("test.user", "test.passw0rd")
+    cl.SetRemoteIPAddress("1.2.3.4")
+    cl.UseOTESystem()
+    r := cl.Request(map[string]interface{}{
+        "COMMAND": "QueryDomainOptions",
+        "DOMAIN": []string{
+            "example1.com",
+            "example2.com"
+        }
+    })
     if r.IsSuccess() {
         fmt.Println("Command succeeded.")
     } else {

@@ -18,8 +18,8 @@ import (
 func Parse(r string) map[string]interface{} {
 	hash := make(map[string]interface{})
 	tmp := strings.Split(strings.Replace(r, "\r", "", -1), "\n")
-	p1 := regexp.MustCompile("^([^\\=]*[^\\t\\= ])[\\t ]*=[\\t ]*(.*)$")
-	p2 := regexp.MustCompile("(?i)^property\\[([^\\]]*)\\]\\[([0-9]+)\\]")
+	p1 := regexp.MustCompile(`^([^\=]*[^\t\= ])[\t ]*=[\t ]*(.*)$`)
+	p2 := regexp.MustCompile(`(?i)^property\[([^\]]*)\]\[([0-9]+)\]`)
 	properties := make(map[string][]string)
 	for _, row := range tmp {
 		m := p1.MatchString(row)
@@ -33,14 +33,14 @@ func Parse(r string) map[string]interface{} {
 				// idx2 := strconv.Atoi(groups2[2])
 				list := make([]string, len(properties[key]))
 				copy(list, properties[key])
-				pat := regexp.MustCompile("[\\t ]*$")
+				pat := regexp.MustCompile(`[\t ]*$`)
 				rep1 := "${1}$2"
 				list = append(list, pat.ReplaceAllString(groups[2], rep1))
 				properties[key] = list
 			} else {
 				val := groups[2]
 				if len(val) > 0 {
-					pat := regexp.MustCompile("[\\t ]*$")
+					pat := regexp.MustCompile(`[\t ]*$`)
 					hash[property] = pat.ReplaceAllString(val, "")
 				}
 			}

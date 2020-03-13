@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 
 func TestGetPOSTData1(t *testing.T) {
 	validate := "s_entity=54cd&s_command=AUTH%3Dgwrgwqg%25%26%5C44t3%2A%0ACOMMAND%3DModifyDomain"
-	enc := cl.GetPOSTData(map[string]string{
+	enc := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "ModifyDomain",
 		"AUTH":    "gwrgwqg%&\\44t3*",
 	})
@@ -105,7 +105,7 @@ func TestSetURL(t *testing.T) {
 
 func TestSetOTP1(t *testing.T) {
 	cl.SetOTP("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_otp=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -115,7 +115,7 @@ func TestSetOTP1(t *testing.T) {
 
 func TestSetOTP2(t *testing.T) {
 	cl.SetOTP("")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -125,7 +125,7 @@ func TestSetOTP2(t *testing.T) {
 
 func TestSetSession1(t *testing.T) {
 	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -137,7 +137,7 @@ func TestSetSession2(t *testing.T) {
 	cl.SetRoleCredentials("myaccountid", "myrole", "mypassword")
 	cl.SetOTP("12345678")
 	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -147,7 +147,7 @@ func TestSetSession2(t *testing.T) {
 
 func TestSetSession3(t *testing.T) {
 	cl.SetSession("")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -161,7 +161,7 @@ func TestSaveReuseSession(t *testing.T) {
 	cl.SaveSession(sessionobj)
 	cl2 := NewAPIClient()
 	cl2.ReuseSession(sessionobj)
-	tmp := cl2.GetPOSTData(map[string]string{
+	tmp := cl2.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -172,7 +172,7 @@ func TestSaveReuseSession(t *testing.T) {
 
 func TestSetRemoteIPAddress1(t *testing.T) {
 	cl.SetRemoteIPAddress("10.10.10.10")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_remoteaddr=10.10.10.10&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -182,7 +182,7 @@ func TestSetRemoteIPAddress1(t *testing.T) {
 
 func TestSetRemoteIPAddress2(t *testing.T) {
 	cl.SetRemoteIPAddress("")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -192,7 +192,7 @@ func TestSetRemoteIPAddress2(t *testing.T) {
 
 func TestSetCredentials1(t *testing.T) {
 	cl.SetCredentials("myaccountid", "mypassword")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -202,7 +202,7 @@ func TestSetCredentials1(t *testing.T) {
 
 func TestSetCredentials2(t *testing.T) {
 	cl.SetCredentials("", "")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -212,7 +212,7 @@ func TestSetCredentials2(t *testing.T) {
 
 func TestSetRoleCredentials1(t *testing.T) {
 	cl.SetRoleCredentials("myaccountid", "myroleid", "mypassword")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid%21myroleid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -222,7 +222,7 @@ func TestSetRoleCredentials1(t *testing.T) {
 
 func TestSetRoleCredentials2(t *testing.T) {
 	cl.SetRoleCredentials("", "", "")
-	tmp := cl.GetPOSTData(map[string]string{
+	tmp := cl.GetPOSTData(map[string]interface{}{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -342,7 +342,7 @@ func TestRequestNextResponsePage1(t *testing.T) {
 	cl.SetRoleCredentials("test.user", "testrole", "test.passw0rd")
 	cl.SetRemoteIPAddress("1.2.3.4")
 	nr := cl.Login()
-	if !r.IsSuccess() {
+	if !nr.IsSuccess() {
 		t.Error("TestRequestNextResponsePage1: Expected login response to be a success case.")
 	}
 	nr, err := cl.RequestNextResponsePage(r)
@@ -464,9 +464,9 @@ func TestRequestAllResponsePages(t *testing.T) {
 
 func TestSetUserView(t *testing.T) {
 	cl.SetUserView("hexotestman.com")
-	r := cl.Request(map[string]string{
-		"COMMAND": "GetUserIndex",
-	})
+	cmd := map[string]interface{}{}
+	cmd["COMMAND"] = "GetUserIndex"
+	r := cl.Request(cmd)
 	if !r.IsSuccess() {
 		t.Error("TestSetUserView: Expected response to be a success case.")
 	}
@@ -474,9 +474,9 @@ func TestSetUserView(t *testing.T) {
 
 func TestResetUserView(t *testing.T) {
 	cl.ResetUserView()
-	r := cl.Request(map[string]string{
-		"COMMAND": "GetUserIndex",
-	})
+	cmd := map[string]interface{}{}
+	cmd["COMMAND"] = "GetUserIndex"
+	r := cl.Request(cmd)
 	if !r.IsSuccess() {
 		t.Error("TestResetUserView: Expected response to be a success case.")
 	}
