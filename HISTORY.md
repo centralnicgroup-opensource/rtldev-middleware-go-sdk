@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/hexonet/go-sdk/compare/v3.2.0...v3.3.0) (2020-05-08)
+
+
+### Features
+
+* **apiclient:** allow to specify additional libraries vai SetUserAgent ([a440863](https://github.com/hexonet/go-sdk/commit/a44086372f9a0a1ad4d32671e98c1beab9dceb3b))
+
 # [3.2.0](https://github.com/hexonet/go-sdk/compare/v3.1.0...v3.2.0) (2020-05-08)
 
 
