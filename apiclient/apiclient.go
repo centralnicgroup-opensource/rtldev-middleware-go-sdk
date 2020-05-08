@@ -164,8 +164,14 @@ func (cl *APIClient) GetURL() string {
 }
 
 // SetUserAgent method to customize user-agent header (useful for tools that use our SDK)
-func (cl *APIClient) SetUserAgent(str string, rv string) *APIClient {
-	cl.ua = str + " (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + rv + ") go-sdk/" + cl.GetVersion() + " go/" + runtime.Version()
+func (cl *APIClient) SetUserAgent(str string, rv string, modules ...[]string) *APIClient {
+	mods := ""
+	if len(modules) > 0 {
+		for i := 0; i < len(modules[0]); i++ {
+			mods += modules[0][i] + " "
+		}
+	}
+	cl.ua = str + " (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + rv + ") " + mods + "go-sdk/" + cl.GetVersion() + " go/" + runtime.Version()
 	return cl
 }
 

@@ -145,6 +145,17 @@ func TestSetUserAgent(t *testing.T) {
 	}
 }
 
+func TestSetUserAgentModules(t *testing.T) {
+	uaid := "WHMCS"
+	uarv := "7.7.0"
+	mods := []string{"reg/2.6.2", "ssl/7.2.2", "dc/8.2.2"}
+	uaexpected := uaid + " (" + runtime.GOOS + "; " + runtime.GOARCH + "; rv:" + uarv + ") reg/2.6.2 ssl/7.2.2 dc/8.2.2 go-sdk/" + cl.GetVersion() + " go/" + runtime.Version()
+	ua := cl.SetUserAgent(uaid, uarv, mods).GetUserAgent()
+	if strings.Compare(ua, uaexpected) != 0 {
+		t.Error("TestGetUserAgent: Expected user-agent not matching.")
+	}
+}
+
 func TestSetURL(t *testing.T) {
 	url := cl.SetURL(ISPAPI_CONNECTION_URL_PROXY).GetURL()
 	if strings.Compare(ISPAPI_CONNECTION_URL_PROXY, url) != 0 {
