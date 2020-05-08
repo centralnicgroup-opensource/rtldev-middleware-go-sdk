@@ -23,6 +23,7 @@
                     "apiclient/apiclient.go"
                 ]
             }
-        ]
+        ],
+        "@semantic-release/github"
     ]
 }
