@@ -1,3 +1,10 @@
+## [3.3.2](https://github.com/hexonet/go-sdk/compare/v3.3.1...v3.3.2) (2020-05-08)
+
+
+### Bug Fixes
+
+* **security:** replace passwords whereever they could be used for output ([d698ab7](https://github.com/hexonet/go-sdk/commit/d698ab79af58216e5ae5bb8561b0c3b4bb1a796d))
+
 ## [3.3.1](https://github.com/hexonet/go-sdk/compare/v3.3.0...v3.3.1) (2020-05-08)
 
 
