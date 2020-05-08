@@ -28,6 +28,12 @@ func NewResponseTemplate(raw string) *ResponseTemplate {
 		Raw:  raw,
 		Hash: rp.Parse(raw),
 	}
+	_, exists1 := rt.Hash["CODE"]
+	_, exists2 := rt.Hash["DESCRIPTION"]
+	if !exists1 || !exists2 {
+		rt.Raw = "[RESPONSE]\r\nCODE=423\r\nDESCRIPTION=Invalid API response. Contact Support\r\nEOF\r\n"
+		rt.Hash = rp.Parse(rt.Raw)
+	}
 	return rt
 }
 

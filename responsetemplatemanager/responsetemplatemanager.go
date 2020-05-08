@@ -35,6 +35,7 @@ func GetInstance() *ResponseTemplateManager {
 				"expired":      generateTemplate("530", "SESSION NOT FOUND"),
 				"httperror":    generateTemplate("421", "Command failed due to HTTP communication error"),
 				"unauthorized": generateTemplate("530", "Unauthorized"),
+				"invalid":      generateTemplate("423", "Invalid API response. Contact Support"),
 			},
 		}
 	})

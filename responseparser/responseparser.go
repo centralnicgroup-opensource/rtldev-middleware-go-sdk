@@ -49,9 +49,6 @@ func Parse(r string) map[string]interface{} {
 	if len(properties) > 0 {
 		hash["PROPERTY"] = properties
 	}
-	if _, ok := hash["DESCRIPTION"]; !ok {
-		hash["DESCRIPTION"] = ""
-	}
 	return hash
 }
 

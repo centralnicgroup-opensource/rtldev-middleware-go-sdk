@@ -13,6 +13,14 @@ func TestConstructor(t *testing.T) {
 	if strings.Compare(tpl.GetDescription(), "Empty API response. Probably unreachable API end point") != 0 {
 		t.Error("TestConstructor: Expected response description not matching.")
 	}
+
+	tpl = NewResponseTemplate("[RESPONSE]\r\ncode=200\r\nqueuetime=0\r\nEOF\r\n")
+	if tpl.GetCode() != 423 {
+		t.Error("TestConstructor: Expected response code not matching invalid template code.")
+	}
+	if strings.Compare(tpl.GetDescription(), "Invalid API response. Contact Support") != 0 {
+		t.Error("TestConstructor: Expected response description not matching invalid template code.")
+	}
 }
 
 func TestGetHash(t *testing.T) {

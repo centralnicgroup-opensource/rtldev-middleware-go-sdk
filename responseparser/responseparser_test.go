@@ -1,24 +1,9 @@
 package responseparser
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
-
-func TestParse(t *testing.T) {
-	plain := "[RESPONSE]\r\nCODE=421\r\nDESCRIPTION=\r\nEOF\r\n"
-	plain = strings.Replace(plain, "\r\nDESCRIPTION=", "", 1)
-	fmt.Println(plain)
-	parsed := Parse(plain)
-	if v, ok := parsed["DESCRIPTION"]; ok {
-		if v != "" {
-			t.Error("TestParse: Expected description to be empty")
-		}
-	} else {
-		t.Error("TestParse: Expected description to exist")
-	}
-}
 
 func TestSerialize1(t *testing.T) {
 	r := Parse("[RESPONSE]\r\nCODE=200\r\nDESCRIPTION=Command completed successfully\r\nEOF\r\n")
