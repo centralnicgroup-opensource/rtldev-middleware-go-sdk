@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/hexonet/go-sdk/compare/v3.1.0...v3.2.0) (2020-05-08)
+
+
+### Features
+
+* **response:** added GetCommandPlain (getting used command in plain text) ([1e00417](https://github.com/hexonet/go-sdk/commit/1e00417222a37a2fc25d6e53e3224a3fdda4c950))
+
 # [3.1.0](https://github.com/hexonet/go-sdk/compare/v3.0.0...v3.1.0) (2020-05-08)
 
 
