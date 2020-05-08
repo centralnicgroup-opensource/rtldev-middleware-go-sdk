@@ -122,8 +122,12 @@ func (cl *APIClient) DisableDebugMode() *APIClient {
 
 // GetPOSTData method to Serialize given command for POST request
 // including connection configuration data
-func (cl *APIClient) GetPOSTData(cmd map[string]string) string {
+func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string {
 	data := cl.socketConfig.GetPOSTData()
+	if len(secured) > 0 && secured[0] {
+		re := regexp.MustCompile("s_pw=[^&]+")
+		data = re.ReplaceAllString(data, "s_pw=***")
+	}
 	var tmp strings.Builder
 	keys := []string{}
 	for key := range cmd {
@@ -140,6 +144,10 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string) string {
 		tmp.WriteString("\n")
 	}
 	str := tmp.String()
+	if len(secured) > 0 && secured[0] {
+		re := regexp.MustCompile("PASSWORD=[^\n]+")
+		str = re.ReplaceAllString(str, "PASSWORD=***")
+	}
 	str = str[:len(str)-1] //remove \n at end
 	return strings.Join([]string{
 		data,
@@ -316,7 +324,8 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	newcmd = cl.autoIDNConvert(newcmd)
 
 	// request command to API
-	data := cl.GetPOSTData(newcmd)
+	data := cl.GetPOSTData(newcmd, false)
+	secured := cl.GetPOSTData(newcmd, true)
 
 	val, err := cl.GetProxy()
 	client := &http.Client{
@@ -337,7 +346,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + data)
+			fmt.Println("POST: " + secured)
 			fmt.Println("HTTP communication failed: " + err.Error())
 			fmt.Println(r.GetPlain())
 		}
@@ -357,7 +366,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + data)
+			fmt.Println("POST: " + secured)
 			fmt.Println("HTTP communication failed: " + err2.Error())
 			fmt.Println(r.GetPlain())
 		}
@@ -372,7 +381,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 			if cl.debugMode {
 				j, _ := json.Marshal(newcmd)
 				fmt.Printf("%s\n", j)
-				fmt.Println("POST: " + data)
+				fmt.Println("POST: " + secured)
 				fmt.Println("HTTP communication failed: " + err.Error())
 				fmt.Println(r.GetPlain())
 			}
@@ -382,7 +391,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + data)
+			fmt.Println("POST: " + secured)
 			fmt.Println(r.GetPlain())
 		}
 		return r
@@ -392,7 +401,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	if cl.debugMode {
 		j, _ := json.Marshal(newcmd)
 		fmt.Printf("%s\n", j)
-		fmt.Println("POST: " + data)
+		fmt.Println("POST: " + secured)
 		fmt.Println(r.GetPlain())
 	}
 	return r

@@ -41,6 +41,20 @@ func TestGetPOSTData1(t *testing.T) {
 	}
 }
 
+func TestGetPOSTDataSecured(t *testing.T) {
+	validate := "s_entity=54cd&s_login=test.user&s_pw=***&s_command=COMMAND%3DCheckAuthentication%0APASSWORD%3D%2A%2A%2A%0ASUBUSER%3Dtest.user"
+	cl.SetCredentials("test.user", "test.passw0rd")
+	enc := cl.GetPOSTData(map[string]string{
+		"COMMAND":  "CheckAuthentication",
+		"SUBUSER":  "test.user",
+		"PASSWORD": "test.passw0rd",
+	}, true)
+	if strings.Compare(enc, validate) != 0 {
+		t.Error(fmt.Printf("TestGetPOSTDataSecured: Expected encoding result not matching\n\n%s\n%s.", enc, validate))
+	}
+	cl.SetCredentials("", "")
+}
+
 func TestEnableDebugMode(t *testing.T) {
 	cl.EnableDebugMode()
 }

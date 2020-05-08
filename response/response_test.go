@@ -41,6 +41,18 @@ func TestGetCommandPlain(t *testing.T) {
 	}
 }
 
+func TestGetCommandPlainSecure(t *testing.T) {
+	r := NewResponse("", map[string]string{
+		"COMMAND":  "CheckAuthentication",
+		"SUBUSER":  "test.user",
+		"PASSWORD": "test.passw0rd",
+	})
+	expected := "COMMAND = CheckAuthentication\nSUBUSER = test.user\nPASSWORD = ***\n"
+	if r.GetCommandPlain() != expected {
+		t.Error("TestGetCommandPlainSecure: plain text command not matching expected value.")
+	}
+}
+
 func TestGetCurrentPageNumber(t *testing.T) {
 	plain := rtm.GetTemplate("listP0").GetPlain()
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})

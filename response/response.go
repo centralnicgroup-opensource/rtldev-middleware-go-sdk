@@ -37,6 +37,10 @@ func NewResponse(raw string, cmd map[string]string) *Response {
 		recordIndex: 0,
 		records:     []record.Record{},
 	}
+	_, exists := r.command["PASSWORD"]
+	if exists {
+		r.command["PASSWORD"] = "***"
+	}
 	r.ResponseTemplate = rt.NewResponseTemplate(raw)
 
 	h := r.ResponseTemplate.GetHash()
