@@ -1,3 +1,16 @@
+# [3.0.0](https://github.com/hexonet/go-sdk/compare/v2.3.0...v3.0.0) (2020-05-08)
+
+
+### Features
+
+* **apiclient:** automatic IDN conversion of API command parameters to punycode ([407c105](https://github.com/hexonet/go-sdk/commit/407c105d9d9f13a77fe68a9c1793596933edbd58))
+
+
+### BREAKING CHANGES
+
+* **apiclient:** Even though thought and build for internal purposes, we launch a major version for
+this change. type of cmd parameter changes from map[string]inteface{} to map[string]string.
+
 # [2.3.0](https://github.com/hexonet/go-sdk/compare/v2.2.3...v2.3.0) (2020-03-13)
 
 
