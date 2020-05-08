@@ -30,7 +30,7 @@ func GetInstance() *ResponseTemplateManager {
 			templates: map[string]string{
 				"404":          generateTemplate("421", "Page not found"),
 				"500":          generateTemplate("500", "Internal server error"),
-				"empty":        generateTemplate("423", "Empty API response. Probably unreachable API end point"),
+				"empty":        generateTemplate("423", "Empty API response. Probably unreachable API end point {CONNECTION_URL}"),
 				"error":        generateTemplate("421", "Command failed due to server error. Client should try again"),
 				"expired":      generateTemplate("530", "SESSION NOT FOUND"),
 				"httperror":    generateTemplate("421", "Command failed due to HTTP communication error"),

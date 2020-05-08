@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -29,6 +30,22 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestPlaceHolderReplacements(t *testing.T) {
+	r := NewResponse("", map[string]string{
+		"COMMAND": "StatusAccount",
+	})
+	re := regexp.MustCompile(`\{[A-Z_]+\}`)
+	if re.MatchString(r.GetDescription()) {
+		t.Error("TestPlaceHolderReplacements: place holders not removed.")
+	}
+
+	r = NewResponse("", map[string]string{"COMMAND": "StatusAccount"}, map[string]string{"CONNECTION_URL": "123HXPHFOUND123"})
+	re = regexp.MustCompile(`123HXPHFOUND123`)
+	if !re.MatchString(r.GetDescription()) {
+		t.Error("TestPlaceHolderReplacements: CONNECTION_URL place holder not removed.\n" + r.GetDescription())
+	}
+}
+
 func TestGetCommandPlain(t *testing.T) {
 	r := NewResponse("", map[string]string{
 		"COMMAND": "QueryDomainOptions",
@@ -36,8 +53,8 @@ func TestGetCommandPlain(t *testing.T) {
 		"DOMAIN1": "example.net",
 	})
 	expected := "COMMAND = QueryDomainOptions\nDOMAIN0 = example.com\nDOMAIN1 = example.net\n"
-	if r.GetCommandPlain() != expected {
-		t.Error("TestGetCommandPlain: plain text command not matching expected value.")
+	if strings.Compare(r.GetCommandPlain(), expected) != 0 {
+		t.Error("TestGetCommandPlain: plain text command not matching expected value.\n\n" + r.GetCommandPlain())
 	}
 }
 
@@ -47,9 +64,9 @@ func TestGetCommandPlainSecure(t *testing.T) {
 		"SUBUSER":  "test.user",
 		"PASSWORD": "test.passw0rd",
 	})
-	expected := "COMMAND = CheckAuthentication\nSUBUSER = test.user\nPASSWORD = ***\n"
-	if r.GetCommandPlain() != expected {
-		t.Error("TestGetCommandPlainSecure: plain text command not matching expected value.")
+	expected := "COMMAND = CheckAuthentication\nPASSWORD = ***\nSUBUSER = test.user\n"
+	if strings.Compare(r.GetCommandPlain(), expected) != 0 {
+		t.Error("TestGetCommandPlainSecure: plain text command not matching expected value.\n\n" + r.GetCommandPlain() + "\n\n" + expected)
 	}
 }
 

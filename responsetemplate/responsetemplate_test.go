@@ -10,8 +10,8 @@ func TestConstructor(t *testing.T) {
 	if tpl.GetCode() != 423 {
 		t.Error("TestConstructor: Expected response code not matching.")
 	}
-	if strings.Compare(tpl.GetDescription(), "Empty API response. Probably unreachable API end point") != 0 {
-		t.Error("TestConstructor: Expected response description not matching.")
+	if strings.Compare(tpl.GetDescription(), "Empty API response. Probably unreachable API end point {CONNECTION_URL}") != 0 {
+		t.Error("TestConstructor: Expected response description not matching.\n\n" + tpl.GetDescription())
 	}
 
 	tpl = NewResponseTemplate("[RESPONSE]\r\ncode=200\r\nqueuetime=0\r\nEOF\r\n")
@@ -28,7 +28,7 @@ func TestGetHash(t *testing.T) {
 	if v, ok := h["CODE"]; !ok || strings.Compare(v.(string), "423") != 0 {
 		t.Error("TestGetHash: Expected response code not matching.")
 	}
-	if v, ok := h["DESCRIPTION"]; !ok || strings.Compare(v.(string), "Empty API response. Probably unreachable API end point") != 0 {
+	if v, ok := h["DESCRIPTION"]; !ok || strings.Compare(v.(string), "Empty API response. Probably unreachable API end point {CONNECTION_URL}") != 0 {
 		t.Error("TestGetHash: Expected response description not matching.")
 	}
 }

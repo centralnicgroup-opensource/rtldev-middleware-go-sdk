@@ -9,6 +9,8 @@ package response
 import (
 	"errors"
 	"math"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -29,7 +31,7 @@ type Response struct {
 }
 
 // NewResponse represents the constructor for struct Response.
-func NewResponse(raw string, cmd map[string]string) *Response {
+func NewResponse(raw string, cmd map[string]string, ph ...map[string]string) *Response {
 	r := &Response{
 		command:     cmd,
 		columnkeys:  []string{},
@@ -42,6 +44,21 @@ func NewResponse(raw string, cmd map[string]string) *Response {
 		r.command["PASSWORD"] = "***"
 	}
 	r.ResponseTemplate = rt.NewResponseTemplate(raw)
+
+	// care about getting placeholder variables replaced
+	re := regexp.MustCompile(`\{[A-Z_]+\}`)
+	if re.MatchString(r.ResponseTemplate.Raw) {
+		phs := map[string]string{}
+		if len(ph) > 0 {
+			phs = ph[0]
+		}
+		newraw := r.ResponseTemplate.Raw
+		for key, val := range phs {
+			newraw = strings.ReplaceAll(newraw, "{"+key+"}", val)
+		}
+		newraw = re.ReplaceAllString(newraw, "")
+		r.ResponseTemplate = rt.NewResponseTemplate(newraw)
+	}
 
 	h := r.ResponseTemplate.GetHash()
 	if p, ok := h["PROPERTY"]; ok {
@@ -129,11 +146,17 @@ func (r *Response) GetCommand() map[string]string {
 
 // GetCommandPlain method to get the underlying API command in plain text
 func (r *Response) GetCommandPlain() string {
+	keys := make([]string, 0, len(r.command))
+	for k := range r.command {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var strBuilder strings.Builder
-	for key, val := range r.command {
-		strBuilder.WriteString(key)
+	for i := 0; i < len(keys); i++ {
+		strBuilder.WriteString(keys[i])
 		strBuilder.WriteString(" = ")
-		strBuilder.WriteString(val)
+		strBuilder.WriteString(r.command[keys[i]])
 		strBuilder.WriteString("\n")
 	}
 	return strBuilder.String()

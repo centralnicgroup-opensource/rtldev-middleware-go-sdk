@@ -324,6 +324,9 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	newcmd = cl.autoIDNConvert(newcmd)
 
 	// request command to API
+	cfg := map[string]string{
+		"CONNECTION_URL": cl.socketURL,
+	}
 	data := cl.GetPOSTData(newcmd, false)
 	secured := cl.GetPOSTData(newcmd, true)
 
@@ -339,10 +342,10 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 			fmt.Println("Not able to parse configured Proxy URL: " + val)
 		}
 	}
-	req, err := http.NewRequest("POST", cl.socketURL, strings.NewReader(data))
+	req, err := http.NewRequest("POST", cfg["CONNECTION_URL"], strings.NewReader(data))
 	if err != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
-		r := R.NewResponse(tpl, newcmd)
+		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
@@ -362,7 +365,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
-		r := R.NewResponse(tpl, newcmd)
+		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
@@ -377,7 +380,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		response, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			tpl := rtm.GetTemplate("httperror").GetPlain()
-			r := R.NewResponse(tpl, newcmd)
+			r := R.NewResponse(tpl, newcmd, cfg)
 			if cl.debugMode {
 				j, _ := json.Marshal(newcmd)
 				fmt.Printf("%s\n", j)
@@ -387,7 +390,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 			}
 			return r
 		}
-		r := R.NewResponse(string(response), newcmd)
+		r := R.NewResponse(string(response), newcmd, cfg)
 		if cl.debugMode {
 			j, _ := json.Marshal(newcmd)
 			fmt.Printf("%s\n", j)
@@ -397,7 +400,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		return r
 	}
 	tpl := rtm.GetTemplate("httperror").GetPlain()
-	r := R.NewResponse(tpl, newcmd)
+	r := R.NewResponse(tpl, newcmd, cfg)
 	if cl.debugMode {
 		j, _ := json.Marshal(newcmd)
 		fmt.Printf("%s\n", j)
