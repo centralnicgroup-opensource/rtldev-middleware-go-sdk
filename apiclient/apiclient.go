@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -75,8 +76,7 @@ func (cl *APIClient) DisableDebugMode() *APIClient {
 
 // GetPOSTData method to Serialize given command for POST request
 // including connection configuration data
-func (cl *APIClient) GetPOSTData(thecmd map[string]interface{}) string {
-	cmd := cl.flattenCommand(thecmd)
+func (cl *APIClient) GetPOSTData(cmd map[string]string) string {
 	data := cl.socketConfig.GetPOSTData()
 	var tmp strings.Builder
 	keys := []string{}
@@ -258,8 +258,13 @@ func (cl *APIClient) Logout() *R.Response {
 
 // Request method to perform API request using the given command
 func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
+	// flatten nested api command bulk parameters
 	newcmd := cl.flattenCommand(cmd)
-	data := cl.GetPOSTData(cmd)
+	// auto convert umlaut names to punycode
+	newcmd = cl.autoIDNConvert(newcmd)
+
+	// request command to API
+	data := cl.GetPOSTData(newcmd)
 
 	client := &http.Client{
 		Timeout: cl.socketTimeout,
@@ -332,7 +337,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 // Useful for lists
 func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error) {
 	mycmd := map[string]interface{}{}
-	for key, val := range cl.toUpperCaseKeys(rr.GetCommand()) {
+	for key, val := range rr.GetCommand() {
 		mycmd[key] = val
 	}
 	if _, ok := mycmd["LAST"]; ok {
@@ -400,31 +405,79 @@ func (cl *APIClient) UseLIVESystem() *APIClient {
 	return cl
 }
 
-// toUpperCaseKeys method to translate all command parameter names to uppercase
-func (cl *APIClient) toUpperCaseKeys(cmd map[string]string) map[string]string {
-	newcmd := map[string]string{}
-	for k, v := range cmd {
-		newcmd[strings.ToUpper(k)] = v
-	}
-	return newcmd
-}
-
 // flattenCommand method to translate all command parameter names to uppercase
 func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]string {
 	newcmd := map[string]string{}
 	for key, val := range cmd {
+		newKey := strings.ToUpper(key)
 		if reflect.TypeOf(val).Kind() == reflect.Slice {
 			v := val.([]string)
 			for idx, str := range v {
 				str = strings.Replace(str, "\r", "", -1)
 				str = strings.Replace(str, "\n", "", -1)
-				newcmd[key+strconv.Itoa(idx)] = str
+				newcmd[newKey+strconv.Itoa(idx)] = str
 			}
 		} else {
 			val := val.(string)
 			val = strings.Replace(val, "\r", "", -1)
 			val = strings.Replace(val, "\n", "", -1)
+			newcmd[newKey] = val
+		}
+	}
+	return newcmd
+}
+
+// autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
+func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
+	newcmd := map[string]string{
+		"COMMAND": "ConvertIDN",
+	}
+	// don't convert for convertidn command to avoid endless loop
+	pattern := regexp.MustCompile(`(?i)^CONVERTIDN$`)
+	mm := pattern.MatchString(cmd["COMMAND"])
+	if mm {
+		return cmd
+	}
+	keys := []string{}
+	pattern = regexp.MustCompile(`(?i)^(DOMAIN|NAMESERVER|DNSZONE)([0-9]*)$`)
+	for key := range cmd {
+		mm = pattern.MatchString(key)
+		if mm {
+			keys = append(keys, key)
+		}
+	}
+	if len(keys) == 0 {
+		return cmd
+	}
+	toconvert := []string{}
+	idxs := []string{}
+	pattern = regexp.MustCompile(`\r|\n`)
+	idnpattern := regexp.MustCompile(`(?i)[^a-z0-9. -]+`)
+	for i := 0; i < len(keys); i++ {
+		key := keys[i]
+		val := pattern.ReplaceAllString(cmd[key], "")
+		mm = idnpattern.MatchString(val)
+		if mm {
+			toconvert = append(toconvert, val)
+			idxs = append(idxs, key)
+		} else {
 			newcmd[key] = val
+		}
+	}
+	if len(toconvert) == 0 {
+		return cmd
+	}
+	r := cl.Request(map[string]interface{}{
+		"COMMAND": "ConvertIDN",
+		"DOMAIN":  toconvert,
+	})
+	if !r.IsSuccess() {
+		return cmd
+	}
+	col := r.GetColumn("ACE")
+	if col != nil {
+		for idx, pc := range col.GetData() {
+			newcmd[idxs[idx]] = pc
 		}
 	}
 	return newcmd

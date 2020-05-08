@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -31,7 +32,7 @@ func TestMain(m *testing.M) {
 
 func TestGetPOSTData1(t *testing.T) {
 	validate := "s_entity=54cd&s_command=AUTH%3Dgwrgwqg%25%26%5C44t3%2A%0ACOMMAND%3DModifyDomain"
-	enc := cl.GetPOSTData(map[string]interface{}{
+	enc := cl.GetPOSTData(map[string]string{
 		"COMMAND": "ModifyDomain",
 		"AUTH":    "gwrgwqg%&\\44t3*",
 	})
@@ -46,6 +47,56 @@ func TestEnableDebugMode(t *testing.T) {
 
 func TestDisableDebugMode(t *testing.T) {
 	cl.DisableDebugMode()
+}
+
+func TestRequestFlattenCommand(t *testing.T) {
+	cl.SetCredentials("test.user", "test.passw0rd")
+	cl.UseOTESystem()
+	r := cl.Request(map[string]interface{}{
+		"COMMAND": "CheckDomains",
+		"DOMAiN":  []string{"example.com", "example.net"},
+	})
+	if !r.IsSuccess() || r.GetCode() != 200 || r.GetDescription() != "Command completed successfully" {
+		t.Error("TestRequestFlattenCommand: Expected response to succeed.")
+	}
+	cmd := r.GetCommand()
+	val1, exists1 := cmd["DOMAIN0"]
+	val2, exists2 := cmd["DOMAIN1"]
+	_, exists3 := cmd["DOMAIN"]
+	_, exists4 := cmd["DOMAiN"]
+	if !exists1 || !exists2 || exists3 || exists4 {
+		t.Error("TestRequestFlattenCommand: DOMAIN parameter flattening not working (keys).")
+	}
+	if val1 != "example.com" || val2 != "example.net" {
+		t.Error("TestRequestFlattenCommand: DOMAIN parameter flattening not working (vals).")
+	}
+}
+
+func TestAutoIDNConvertCommand(t *testing.T) {
+	cl.SetCredentials("test.user", "test.passw0rd")
+	cl.UseOTESystem()
+	r := cl.Request(map[string]interface{}{
+		"COMMAND": "CheckDomains",
+		"DOMAiN":  []string{"example.com", "dömäin.example", "example.net"},
+	})
+	if !r.IsSuccess() || r.GetCode() != 200 || r.GetDescription() != "Command completed successfully" {
+		t.Error("TestRequestFlattenCommand: Expected response to succeed." + strconv.Itoa(r.GetCode()) + r.GetDescription())
+	}
+	cmd := r.GetCommand()
+	val1, exists1 := cmd["DOMAIN0"]
+	val2, exists2 := cmd["DOMAIN1"]
+	val3, exists3 := cmd["DOMAIN2"]
+	_, exists4 := cmd["DOMAIN"]
+	_, exists5 := cmd["DOMAiN"]
+	if !exists1 || !exists2 || !exists3 || exists4 || exists5 {
+		t.Error("TestRequestFlattenCommand: DOMAIN parameter flattening not working (keys).")
+	}
+	if val1 != "example.com" || val2 != "xn--dmin-moa0i.example" || val3 != "example.net" {
+		t.Error("TestRequestFlattenCommand: DOMAIN parameter flattening not working (vals).")
+	}
+	// reset to defaults for following tests
+	cl.SetCredentials("", "")
+	cl.UseLIVESystem()
 }
 
 func TestGetSession1(t *testing.T) {
@@ -105,7 +156,7 @@ func TestSetURL(t *testing.T) {
 
 func TestSetOTP1(t *testing.T) {
 	cl.SetOTP("12345678")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_otp=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -115,7 +166,7 @@ func TestSetOTP1(t *testing.T) {
 
 func TestSetOTP2(t *testing.T) {
 	cl.SetOTP("")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -125,7 +176,7 @@ func TestSetOTP2(t *testing.T) {
 
 func TestSetSession1(t *testing.T) {
 	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -137,7 +188,7 @@ func TestSetSession2(t *testing.T) {
 	cl.SetRoleCredentials("myaccountid", "myrole", "mypassword")
 	cl.SetOTP("12345678")
 	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -147,7 +198,7 @@ func TestSetSession2(t *testing.T) {
 
 func TestSetSession3(t *testing.T) {
 	cl.SetSession("")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -161,7 +212,7 @@ func TestSaveReuseSession(t *testing.T) {
 	cl.SaveSession(sessionobj)
 	cl2 := NewAPIClient()
 	cl2.ReuseSession(sessionobj)
-	tmp := cl2.GetPOSTData(map[string]interface{}{
+	tmp := cl2.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -172,7 +223,7 @@ func TestSaveReuseSession(t *testing.T) {
 
 func TestSetRemoteIPAddress1(t *testing.T) {
 	cl.SetRemoteIPAddress("10.10.10.10")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_remoteaddr=10.10.10.10&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -182,7 +233,7 @@ func TestSetRemoteIPAddress1(t *testing.T) {
 
 func TestSetRemoteIPAddress2(t *testing.T) {
 	cl.SetRemoteIPAddress("")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -192,7 +243,7 @@ func TestSetRemoteIPAddress2(t *testing.T) {
 
 func TestSetCredentials1(t *testing.T) {
 	cl.SetCredentials("myaccountid", "mypassword")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -202,7 +253,7 @@ func TestSetCredentials1(t *testing.T) {
 
 func TestSetCredentials2(t *testing.T) {
 	cl.SetCredentials("", "")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -212,7 +263,7 @@ func TestSetCredentials2(t *testing.T) {
 
 func TestSetRoleCredentials1(t *testing.T) {
 	cl.SetRoleCredentials("myaccountid", "myroleid", "mypassword")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid%21myroleid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
@@ -222,7 +273,7 @@ func TestSetRoleCredentials1(t *testing.T) {
 
 func TestSetRoleCredentials2(t *testing.T) {
 	cl.SetRoleCredentials("", "", "")
-	tmp := cl.GetPOSTData(map[string]interface{}{
+	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
