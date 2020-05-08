@@ -29,6 +29,18 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestGetCommandPlain(t *testing.T) {
+	r := NewResponse("", map[string]string{
+		"COMMAND": "QueryDomainOptions",
+		"DOMAIN0": "example.com",
+		"DOMAIN1": "example.net",
+	})
+	expected := "COMMAND = QueryDomainOptions\nDOMAIN0 = example.com\nDOMAIN1 = example.net\n"
+	if r.GetCommandPlain() != expected {
+		t.Error("TestGetCommandPlain: plain text command not matching expected value.")
+	}
+}
+
 func TestGetCurrentPageNumber(t *testing.T) {
 	plain := rtm.GetTemplate("listP0").GetPlain()
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/hexonet/go-sdk/column"
 	"github.com/hexonet/go-sdk/record"
@@ -120,6 +121,18 @@ func (r *Response) GetColumns() []column.Column {
 // GetCommand method to get the underlying API command
 func (r *Response) GetCommand() map[string]string {
 	return r.command
+}
+
+// GetCommandPlain method to get the underlying API command in plain text
+func (r *Response) GetCommandPlain() string {
+	var strBuilder strings.Builder
+	for key, val := range r.command {
+		strBuilder.WriteString(key)
+		strBuilder.WriteString(" = ")
+		strBuilder.WriteString(val)
+		strBuilder.WriteString("\n")
+	}
+	return strBuilder.String()
 }
 
 // GetCurrentPageNumber method to get the page number of current list query
