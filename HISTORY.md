@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/hexonet/go-sdk/compare/v3.3.2...v3.4.0) (2020-05-08)
+
+
+### Features
+
+* **response:** possibility of placeholder vars in standard responses to improve error details ([87df76b](https://github.com/hexonet/go-sdk/commit/87df76b39b0e267f4acf12dcc695ba599e233bc4))
+
 ## [3.3.2](https://github.com/hexonet/go-sdk/compare/v3.3.1...v3.3.2) (2020-05-08)
 
 
