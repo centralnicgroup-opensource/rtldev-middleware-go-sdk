@@ -122,7 +122,7 @@ func TestGetSesssion2(t *testing.T) {
 
 func TestGetURL(t *testing.T) {
 	url := cl.GetURL()
-	if strings.Compare(url, "https://api.ispapi.net/api/call.cgi") != 0 {
+	if strings.Compare(url, ISPAPI_CONNECTION_URL) != 0 {
 		t.Error("TestGetURL: Expected url not matching.")
 	}
 }
@@ -146,12 +146,11 @@ func TestSetUserAgent(t *testing.T) {
 }
 
 func TestSetURL(t *testing.T) {
-	newurl := "http://api.ispapi.net/api/call.cgi"
-	url := cl.SetURL(newurl).GetURL()
-	if strings.Compare(newurl, url) != 0 {
+	url := cl.SetURL(ISPAPI_CONNECTION_URL_PROXY).GetURL()
+	if strings.Compare(ISPAPI_CONNECTION_URL_PROXY, url) != 0 {
 		t.Error("TestSetURL: Expected url not matching.")
 	}
-	cl.SetURL("https://api.ispapi.net/api/call.cgi")
+	cl.SetURL(ISPAPI_CONNECTION_URL)
 }
 
 func TestSetOTP1(t *testing.T) {
@@ -278,6 +277,40 @@ func TestSetRoleCredentials2(t *testing.T) {
 	})
 	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
 		t.Error("TestSetRoleCredentials2: Expected post data string not matching.")
+	}
+}
+
+func TestSetProxy(t *testing.T) {
+	cl.SetProxy("127.0.0.1")
+	val, err := cl.GetProxy()
+	if err != nil || val != "127.0.0.1" {
+		t.Error("TestSetProxy: proxy not matching expected value")
+	}
+	cl.SetProxy("")
+}
+
+func TestSetReferer(t *testing.T) {
+	cl.SetReferer("https://www.hexonet.net/")
+	val, err := cl.GetReferer()
+	if err != nil || val != "https://www.hexonet.net/" {
+		t.Error("TestSetReferer: referer not matching expected value")
+	}
+	cl.SetReferer("")
+}
+
+func TestUseHighPerformanceConnectionSetup(t *testing.T) {
+	cl.UseHighPerformanceConnectionSetup()
+	val := cl.GetURL()
+	if val != ISPAPI_CONNECTION_URL_PROXY {
+		t.Error("TestUseHighPerformanceConnectionSetup: couldn't activate high performance connection setup")
+	}
+}
+
+func TestDefaultConnectionSetup(t *testing.T) {
+	cl.UseDefaultConnectionSetup()
+	val := cl.GetURL()
+	if val != ISPAPI_CONNECTION_URL {
+		t.Error("TestDefaultConnectionSetup: couldn't activate default connection setup")
 	}
 }
 

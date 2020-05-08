@@ -26,6 +26,12 @@ import (
 	SC "github.com/hexonet/go-sdk/socketconfig"
 )
 
+// ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup
+const ISPAPI_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi"
+
+// ISPAPI_CONNECTION_URL represents the url used for the default connection setup
+const ISPAPI_CONNECTION_URL = "https://api.ispapi.net/api/call.cgi"
+
 var rtm = RTM.GetInstance()
 
 // APIClient is the entry point class for communicating with the insanely fast HEXONET backend api.
@@ -46,6 +52,7 @@ type APIClient struct {
 	socketURL     string
 	socketConfig  *SC.SocketConfig
 	debugMode     bool
+	curlopts      map[string]string
 	ua            string
 }
 
@@ -54,12 +61,51 @@ func NewAPIClient() *APIClient {
 	cl := &APIClient{
 		debugMode:     false,
 		socketTimeout: 300 * time.Second,
-		socketURL:     "https://api.ispapi.net/api/call.cgi",
+		socketURL:     ISPAPI_CONNECTION_URL,
 		socketConfig:  SC.NewSocketConfig(),
+		curlopts:      map[string]string{},
 		ua:            "",
 	}
 	cl.UseLIVESystem()
 	return cl
+}
+
+// SetProxy method to set a proxy to use for API communication
+func (cl *APIClient) SetProxy(proxy string) *APIClient {
+	if len(proxy) == 0 {
+		delete(cl.curlopts, "PROXY")
+	} else {
+		cl.curlopts["PROXY"] = proxy
+	}
+	return cl
+}
+
+// GetProxy method to get the configured proxy to use for API communication
+func (cl *APIClient) GetProxy() (string, error) {
+	val, exists := cl.curlopts["PROXY"]
+	if exists {
+		return val, nil
+	}
+	return "", errors.New("No proxy configuration available.")
+}
+
+// SetReferer method to set a value for HTTP Header `Referer` to use for API communication
+func (cl *APIClient) SetReferer(referer string) *APIClient {
+	if len(referer) == 0 {
+		delete(cl.curlopts, "REFERER")
+	} else {
+		cl.curlopts["REFERER"] = referer
+	}
+	return cl
+}
+
+// GetReferer method to get configured HTTP Header `Referer` value
+func (cl *APIClient) GetReferer() (string, error) {
+	val, exists := cl.curlopts["REFERER"]
+	if exists {
+		return val, nil
+	}
+	return "", errors.New("No configuration available for HTTP Header `Referer`.")
 }
 
 // EnableDebugMode method to enable Debug Output to logger
@@ -266,8 +312,17 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	// request command to API
 	data := cl.GetPOSTData(newcmd)
 
+	val, err := cl.GetProxy()
 	client := &http.Client{
 		Timeout: cl.socketTimeout,
+	}
+	if err == nil {
+		proxyUrl, err := url.Parse(val)
+		if err == nil {
+			client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+		} else if cl.debugMode {
+			fmt.Println("Not able to parse configured Proxy URL: " + val)
+		}
 	}
 	req, err := http.NewRequest("POST", cl.socketURL, strings.NewReader(data))
 	if err != nil {
@@ -285,6 +340,10 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Expect", "")
 	req.Header.Add("User-Agent", cl.GetUserAgent())
+	val, err = cl.GetReferer()
+	if err != nil {
+		req.Header.Add("Referer", val)
+	}
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
@@ -389,6 +448,18 @@ func (cl *APIClient) SetUserView(uid string) *APIClient {
 // ResetUserView method to reset data view back from subuser to user
 func (cl *APIClient) ResetUserView() *APIClient {
 	cl.socketConfig.SetUser("")
+	return cl
+}
+
+// UseHighPerformanceConnectionSetup to activate high performance conneciton setup
+func (cl *APIClient) UseHighPerformanceConnectionSetup() *APIClient {
+	cl.SetURL(ISPAPI_CONNECTION_URL_PROXY)
+	return cl
+}
+
+// UseDefaultConnectionSetup to activate default conneciton setup (the default anyways)
+func (cl *APIClient) UseDefaultConnectionSetup() *APIClient {
+	cl.SetURL(ISPAPI_CONNECTION_URL)
 	return cl
 }
 

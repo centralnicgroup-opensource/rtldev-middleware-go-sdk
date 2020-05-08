@@ -20,13 +20,16 @@ This module is a connector library for the insanely fast HEXONET Backend API. Fo
 ## Features
 
 * Automatic IDN Domain name conversion to punycode (our API accepts only punycode format in commands)
-* Allow nested associative arrays in API commands to improve for bulk parameters
+* Allows nested associative arrays in API commands to improve for bulk parameters
 * Connecting and communication with our API
 * Several ways to access and deal with response data
 * Getting the command again returned together with the response
-* sessionless communication
-* session-based communication
-* possibility to save API session identifier in session
+* Sessionless communication
+* Session based communication
+* Possibility to save API session identifier in session
+* Configure a Proxy for API communication
+* Configure a Referer for API communication
+* High Performance Proxy Setup
 
 ## How to use this module in your project
 
@@ -51,6 +54,78 @@ Then reload the profile configuration by `source ~/.profile`.
 Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch -tree github.com/hexonet/go-sdk@<tag id>` where *tag id* corresponds to a [release version tag](https://github.com/hexonet/go-sdk/releases). You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
 
 For more details on govendor, please read the [CheatSheet](https://github.com/kardianos/govendor/wiki/Govendor-CheatSheet) and also the [developer guide](https://github.com/kardianos/govendor/blob/master/doc/dev-guide.md).
+
+### High Performance Proxy Setup
+
+Long distances to our main data center in Germany may result in high network latencies. If you encounter such problems, we highly recommend to use this setup, as it uses persistent connections to our API server and the overhead for connection establishments is omitted.
+
+#### Step 1: Required Apache2 packages / modules
+
+*At least Apache version 2.2.9* is required.
+
+The following Apache2 modules must be installed and activated:
+
+```bash
+proxy.conf
+proxy.load
+proxy_http.load
+ssl.conf # for HTTPs connection to our API server
+ssl.load # for HTTPs connection to our API server
+```
+
+#### Step 2: Apache configuration
+
+An example Apache configuration with binding to localhost:
+
+```bash
+<VirtualHost 127.0.0.1:80>
+    ServerAdmin webmaster@localhost
+    ServerSignature Off
+    SSLProxyEngine on
+    ProxyPass /api/call.cgi https://api.ispapi.net/api/call.cgi min=1 max=2
+    <Proxy *>
+        Order Deny,Allow
+        Deny from none
+        Allow from all
+    </Proxy>
+</VirtualHost>
+```
+
+After saving your configuration changes please restart the Apache webserver.
+
+#### Step 3: Using this setup
+
+```go
+package main
+
+import (
+    "fmt"
+
+    CL "github.com/hexonet/go-sdk/apiclient"
+)
+
+func main() {
+    cl := CL.NewAPIClient()
+    //Default Connection Setup would be used otherwise by default
+    cl.UseHighPerformanceConnectionSetup()
+    //LIVE System would be used otherwise by default
+    cl.UseOTESystem()
+    cl.SetCredentials("test.user", "test.passw0rd")
+
+    r := cl.Request(map[string]interface{}{
+        "COMMAND": "StatusAccount"
+    })
+}
+```
+
+So, what happens in code behind the scenes? We communicate with localhost (so our proxy setup) that passes the requests to the HEXONET API.
+Of course we can't activate this setup by default as it is based on Steps 1 and 2. Otherwise connecting to our API wouldn't work.
+
+Just in case the above port or ip address can't be used, use function setURL instead to set a different URL / Port.
+`http://127.0.0.1/api/call.cgi` is the default URL for the High Performance Proxy Setup.
+e.g. `$cl->setURL("http://127.0.0.1:8765/api/call.cgi");` would change the port. Configure that port also in the Apache Configuration (-> Step 2)!
+
+Don't use `https` for that setup as it leads to slowing things down as of the https `overhead` of securing the connection. In this setup we just connect to localhost, so no direct outgoing network traffic using `http`. The apache configuration finally takes care passing it to `https` for the final communication to the HEXONET API.
 
 ### Usage Examples
 
