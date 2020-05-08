@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/hexonet/go-sdk/compare/v3.0.0...v3.1.0) (2020-05-08)
+
+
+### Features
+
+* **apiclient:** support the `High Performance Proxy Connection Setup`. see README.md ([3487c88](https://github.com/hexonet/go-sdk/commit/3487c8800001d9b790c0c398dbdcc3d78efc2863))
+
 # [3.0.0](https://github.com/hexonet/go-sdk/compare/v2.3.0...v3.0.0) (2020-05-08)
 
 
