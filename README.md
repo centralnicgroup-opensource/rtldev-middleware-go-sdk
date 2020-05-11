@@ -127,6 +127,36 @@ e.g. `$cl->setURL("http://127.0.0.1:8765/api/call.cgi");` would change the port.
 
 Don't use `https` for that setup as it leads to slowing things down as of the https `overhead` of securing the connection. In this setup we just connect to localhost, so no direct outgoing network traffic using `http`. The apache configuration finally takes care passing it to `https` for the final communication to the HEXONET API.
 
+### Customize Logging / Outputs
+
+When having the debug mode activated `github.com/hexonet/logger` will be used for doing outputs.
+Of course it could be of interest for integrators to look for a way of getting this replaced by a custom mechanism like forwarding things to a 3rd-party software, logging into file or whatever.
+
+```php
+package main
+
+import (
+    "fmt"
+
+    CL "github.com/hexonet/go-sdk/apiclient"
+    LG "github.com/myspace/customlogger"
+)
+
+func main() {
+    cl := CL.NewAPIClient()
+    cl.SetCredentials("test.user", "test.passw0rd")//username, password
+    cl.UseOTESystem()//LIVE System would be used otherwise by default
+    cl.enableDebugMode()//activate debug outputs / logging
+    cl.setCustomLogger(new LG.NewCustomerLogger())//set your custom mechanism for debug outputs/logging
+
+    r := cl.Request(map[string]interface{}{
+        "COMMAND": "StatusAccount"
+    })
+}
+```
+
+NOTE: Find an example for a custom logger class implementation in `customlogger/customlogger.go`. If you have questions, feel free to open a github issue. Follow the interface `ILogger` defined in `logger/logger.go`.
+
 ### Usage Examples
 
 Please have an eye on our [HEXONET Backend API documentation](https://github.com/hexonet/hexonet-api-documentation/tree/master/API). Here you can find information on available Commands and their response data.

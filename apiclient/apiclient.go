@@ -7,7 +7,6 @@
 package apiclient
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -21,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	LG "github.com/hexonet/go-sdk/logger"
 	R "github.com/hexonet/go-sdk/response"
 	RTM "github.com/hexonet/go-sdk/responsetemplatemanager"
 	SC "github.com/hexonet/go-sdk/socketconfig"
@@ -54,6 +54,7 @@ type APIClient struct {
 	debugMode     bool
 	curlopts      map[string]string
 	ua            string
+	logger        LG.ILogger
 }
 
 // NewAPIClient represents the constructor for struct APIClient.
@@ -65,8 +66,22 @@ func NewAPIClient() *APIClient {
 		socketConfig:  SC.NewSocketConfig(),
 		curlopts:      map[string]string{},
 		ua:            "",
+		logger:        nil,
 	}
 	cl.UseLIVESystem()
+	cl.SetDefaultLogger()
+	return cl
+}
+
+// SetDefaultLogger method to use the default mechanism for debug mode outputs
+func (cl *APIClient) SetDefaultLogger() *APIClient {
+	cl.logger = LG.NewLogger()
+	return cl
+}
+
+// SetCustomLogger method to use a custom mechanism for debug mode outputs/logging
+func (cl *APIClient) SetCustomLogger(logger LG.ILogger) *APIClient {
+	cl.logger = logger
 	return cl
 }
 
@@ -347,11 +362,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
 		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
-			j, _ := json.Marshal(newcmd)
-			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + secured)
-			fmt.Println("HTTP communication failed: " + err.Error())
-			fmt.Println(r.GetPlain())
+			cl.logger.Log(secured, r, err.Error())
 		}
 		return r
 	}
@@ -367,11 +378,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		tpl := rtm.GetTemplate("httperror").GetPlain()
 		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
-			j, _ := json.Marshal(newcmd)
-			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + secured)
-			fmt.Println("HTTP communication failed: " + err2.Error())
-			fmt.Println(r.GetPlain())
+			cl.logger.Log(secured, r, err2.Error())
 		}
 		return r
 	}
@@ -382,30 +389,20 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 			tpl := rtm.GetTemplate("httperror").GetPlain()
 			r := R.NewResponse(tpl, newcmd, cfg)
 			if cl.debugMode {
-				j, _ := json.Marshal(newcmd)
-				fmt.Printf("%s\n", j)
-				fmt.Println("POST: " + secured)
-				fmt.Println("HTTP communication failed: " + err.Error())
-				fmt.Println(r.GetPlain())
+				cl.logger.Log(secured, r, err.Error())
 			}
 			return r
 		}
 		r := R.NewResponse(string(response), newcmd, cfg)
 		if cl.debugMode {
-			j, _ := json.Marshal(newcmd)
-			fmt.Printf("%s\n", j)
-			fmt.Println("POST: " + secured)
-			fmt.Println(r.GetPlain())
+			cl.logger.Log(secured, r)
 		}
 		return r
 	}
 	tpl := rtm.GetTemplate("httperror").GetPlain()
 	r := R.NewResponse(tpl, newcmd, cfg)
 	if cl.debugMode {
-		j, _ := json.Marshal(newcmd)
-		fmt.Printf("%s\n", j)
-		fmt.Println("POST: " + secured)
-		fmt.Println(r.GetPlain())
+		cl.logger.Log(secured, r)
 	}
 	return r
 }
