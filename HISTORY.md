@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/hexonet/go-sdk/compare/v3.4.0...v3.5.0) (2020-05-11)
+
+
+### Features
+
+* **logger:** possibility to override debug mode's default logging mechanism. See README.md ([dc71ed9](https://github.com/hexonet/go-sdk/commit/dc71ed9417e838aae7c4e09834cd31e8f33764ef))
+
 # [3.4.0](https://github.com/hexonet/go-sdk/compare/v3.3.2...v3.4.0) (2020-05-08)
 
 
