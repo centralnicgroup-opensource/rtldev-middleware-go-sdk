@@ -5,9 +5,7 @@
 # semantic-release. SEE package.json
 
 # version format: X.Y.Z
-newversion="$1";
-branch="$2";
+newversion="$1"
 
-if [ "$branch" = "master" ]; then
-    sed -i "s/return \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/return \"${newversion}\"/g" apiclient/apiclient.go
-fi;
+printf -v sed_script 's/return "[0-9]\+\.[0-9]\+\.[0-9]\+"/return "%s"/g' "${newversion}"
+sed -i -e "${sed_script}" apiclient/apiclient.go
