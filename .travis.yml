@@ -28,7 +28,7 @@ jobs:
         - (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`)
         - source ~/.nvm/nvm.sh
         - nvm install lts/*
-      script:
         - npm prune
         - travis_retry npm i
+      script:
         - npx semantic-release
