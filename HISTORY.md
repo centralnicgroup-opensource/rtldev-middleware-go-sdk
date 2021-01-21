@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/hexonet/go-sdk/compare/v3.5.0...v3.5.1) (2021-01-21)
+
+
+### Bug Fixes
+
+* **ci:** migration from Travis CI to github actions ([3461c59](https://github.com/hexonet/go-sdk/commit/3461c59779134ef614e5a1599d2c13ccc1203343))
+
 # [3.5.0](https://github.com/hexonet/go-sdk/compare/v3.4.0...v3.5.0) (2020-05-11)
 
 
