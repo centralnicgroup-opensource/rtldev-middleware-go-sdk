@@ -15,11 +15,13 @@ jobs:
         with:
           go-version: "^1.15.7"
       - name: Build & Validation
+        #TODO migrate to go lint
+        #TODO govendor is deprecated -> go modules
+        #curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
+        #./scripts/validate-go.sh
         run: |
           go version
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
-          ./scripts/validate-go.sh
           ./scripts/test-go.sh
   release:
     name: Release @ ubuntu-latest
