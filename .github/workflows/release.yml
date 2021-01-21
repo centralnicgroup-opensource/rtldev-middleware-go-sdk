@@ -14,10 +14,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: "^1.15.7"
-        #TODO migrate to go lint
         #TODO govendor is deprecated -> go modules
-        #curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
-        #./scripts/validate-go.sh
       - name: Install dependencies
         run: |
           go version
@@ -28,6 +25,8 @@ jobs:
         run: |
           go vet .
           golint .
+      - name: Run test
+        run: ./scripts/test-go.sh
   release:
     name: Release @ ubuntu-latest
     runs-on: ubuntu-latest
