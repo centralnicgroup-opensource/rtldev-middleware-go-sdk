@@ -22,6 +22,7 @@ jobs:
         run: |
           go version
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          go get github.com/hexonet/go-sdk
           ./scripts/test-go.sh
   release:
     name: Release @ ubuntu-latest
