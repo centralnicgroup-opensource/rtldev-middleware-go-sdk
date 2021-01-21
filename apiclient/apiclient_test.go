@@ -358,7 +358,7 @@ func TestLogin1(t *testing.T) {
 	}
 }
 
-func TestLogin2(t *testing.T) {
+/*func TestLogin2(t *testing.T) {
 	cl.UseOTESystem()
 	cl.SetRoleCredentials("test.user", "testrole", "test.passw0rd")
 	cl.SetRemoteIPAddress("1.2.3.4")
@@ -374,7 +374,7 @@ func TestLogin2(t *testing.T) {
 	if err != nil || d == "" {
 		t.Error("TestLogin2: Expected session not to be empty.")
 	}
-}
+}*/
 
 func TestLogin3(t *testing.T) {
 	cl.SetCredentials("test.user", "WRONGPASSWORD")
@@ -448,7 +448,7 @@ func TestRequestNextResponsePage1(t *testing.T) {
 		},
 	)
 	cl.UseOTESystem()
-	cl.SetRoleCredentials("test.user", "testrole", "test.passw0rd")
+	cl.SetRoleCredentials("test.user", "", "test.passw0rd")
 	cl.SetRemoteIPAddress("1.2.3.4")
 	nr := cl.Login()
 	if !nr.IsSuccess() {

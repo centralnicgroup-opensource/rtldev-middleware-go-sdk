@@ -1,0 +1,44 @@
+name: Release
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test @ Go
+    # Support [skip ci] out of box with github actions Workaround
+    # Only works for push https://github.com/actions/runner/issues/774
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && contains(toJson(github.event.commits), '[skip ci]') == false)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.15.7"
+      - name: Build & Validation
+        run: |
+          go version
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
+          ./scripts/validate-go.sh
+          ./scripts/test-go.sh
+  release:
+    name: Release @ ubuntu-latest
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup NodeJS LTS
+        uses: actions/setup-node@v2
+      - name: Install dependencies
+        run: |
+          npm prune && npm i
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release
