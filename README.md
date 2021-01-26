@@ -38,7 +38,6 @@ We have also a demo app available showing how to integrate and use our SDK. See 
 ### Requirements
 
 * Installed [GO/GOLANG](https://golang.org/doc/install). Restart your machine after installing GO.
-* Installed [govendor](https://github.com/kardianos/govendor).
 
 NOTE: Make sure you add the go binary path to your PATH environment variable. Add the below lines for a standard installation into your profile configuration file (~/.profile).
 
@@ -49,11 +48,9 @@ export PATH=$PATH:$GOPATH/bin
 
 Then reload the profile configuration by `source ~/.profile`.
 
-### Using govendor
+### Using go modules
 
-Use [govendor](https://github.com/kardianos/govendor) for the dependency installation by `govendor fetch -tree github.com/hexonet/go-sdk@<tag id>` where *tag id* corresponds to a [release version tag](https://github.com/hexonet/go-sdk/releases). You can update this dependency later on by `govendor sync github.com/hexonet/go-sdk@<new tag id>`. The dependencies will be installed in your project's subfolder "vendor". Import the module in your project as shown in the examples below.
-
-For more details on govendor, please read the [CheatSheet](https://github.com/kardianos/govendor/wiki/Govendor-CheatSheet) and also the [developer guide](https://github.com/kardianos/govendor/blob/master/doc/dev-guide.md).
+Use [go modules](https://blog.golang.org/using-go-modules) for the dependency installation by e.g. `go build .` in your app. You can update this dependency later on by `go get -u ./... && go mod tidy`. Import the module in your project as shown in the examples below.
 
 ### High Performance Proxy Setup
 
