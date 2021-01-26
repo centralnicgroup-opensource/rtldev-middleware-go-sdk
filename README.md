@@ -50,7 +50,7 @@ Then reload the profile configuration by `source ~/.profile`.
 
 ### Using go modules
 
-Use [go modules](https://blog.golang.org/using-go-modules) for the dependency installation by e.g. `go build .` in your app. You can update this dependency later on by `go get -u ./... && go mod tidy`. Import the module in your project as shown in the examples below.
+Use [go modules](https://blog.golang.org/using-go-modules) for the dependency installation by e.g. `go get -u github.com/hexonet/go-sdk` in your app. You can update this dependency later on by `go get -u ./... && go mod tidy`. Import the module in your project as shown in the examples below.
 
 ### High Performance Proxy Setup
 
