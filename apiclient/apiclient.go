@@ -20,10 +20,10 @@ import (
 	"strings"
 	"time"
 
-	LG "github.com/hexonet/go-sdk/logger"
-	R "github.com/hexonet/go-sdk/response"
-	RTM "github.com/hexonet/go-sdk/responsetemplatemanager"
-	SC "github.com/hexonet/go-sdk/socketconfig"
+	LG "github.com/hexonet/go-sdk/v3/logger"
+	R "github.com/hexonet/go-sdk/v3/response"
+	RTM "github.com/hexonet/go-sdk/v3/responsetemplatemanager"
+	SC "github.com/hexonet/go-sdk/v3/socketconfig"
 )
 
 // ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup

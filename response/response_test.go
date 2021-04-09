@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	RP "github.com/hexonet/go-sdk/responseparser"
-	RTM "github.com/hexonet/go-sdk/responsetemplatemanager"
+	RP "github.com/hexonet/go-sdk/v3/responseparser"
+	RTM "github.com/hexonet/go-sdk/v3/responsetemplatemanager"
 )
 
 var rtm = RTM.GetInstance()

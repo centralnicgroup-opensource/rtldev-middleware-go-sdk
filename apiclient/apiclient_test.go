@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	R "github.com/hexonet/go-sdk/response"
+	R "github.com/hexonet/go-sdk/v3/response"
 )
 
 var cl = NewAPIClient()
