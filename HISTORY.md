@@ -1,3 +1,10 @@
+## [3.5.2](https://github.com/hexonet/go-sdk/compare/v3.5.1...v3.5.2) (2021-04-09)
+
+
+### Performance Improvements
+
+* **fixed version:** included version number in go.mod ([903ca2f](https://github.com/hexonet/go-sdk/commit/903ca2f9b3065730cb19af4c7ac06e440b8655cb))
+
 ## [3.5.1](https://github.com/hexonet/go-sdk/compare/v3.5.0...v3.5.1) (2021-01-21)
 
 
