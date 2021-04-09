@@ -9,8 +9,8 @@ package customlogger
 import (
 	"fmt"
 
-	L "github.com/hexonet/go-sdk/logger"
-	R "github.com/hexonet/go-sdk/response"
+	L "github.com/hexonet/go-sdk/v3/logger"
+	R "github.com/hexonet/go-sdk/v3/response"
 )
 
 // Logger is a struct representing logger for API communication.
