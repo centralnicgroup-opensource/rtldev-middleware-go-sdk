@@ -29,8 +29,11 @@ import (
 // ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup
 const ISPAPI_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi"
 
-// ISPAPI_CONNECTION_URL represents the url used for the default connection setup
-const ISPAPI_CONNECTION_URL = "https://api.ispapi.net/api/call.cgi"
+// ISPAPI_CONNECTION_URL_LIVE represents the url used for the default connection setup
+const ISPAPI_CONNECTION_URL_LIVE = "https://api.ispapi.net/api/call.cgi"
+
+// ISPAPI_CONNECTION_URL_OTE represents the url used for the OT&E (demo system) connection setup
+const ISPAPI_CONNECTION_URL_OTE = "https://api-ote.ispapi.net/api/call.cgi"
 
 var rtm = RTM.GetInstance()
 
@@ -62,7 +65,7 @@ func NewAPIClient() *APIClient {
 	cl := &APIClient{
 		debugMode:     false,
 		socketTimeout: 300 * time.Second,
-		socketURL:     ISPAPI_CONNECTION_URL,
+		socketURL:     ISPAPI_CONNECTION_URL_LIVE,
 		socketConfig:  SC.NewSocketConfig(),
 		curlopts:      map[string]string{},
 		ua:            "",
@@ -474,12 +477,13 @@ func (cl *APIClient) UseHighPerformanceConnectionSetup() *APIClient {
 
 // UseDefaultConnectionSetup to activate default conneciton setup (the default anyways)
 func (cl *APIClient) UseDefaultConnectionSetup() *APIClient {
-	cl.SetURL(ISPAPI_CONNECTION_URL)
+	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
 	return cl
 }
 
 // UseOTESystem method to set OT&E System for API communication
 func (cl *APIClient) UseOTESystem() *APIClient {
+	cl.SetURL(ISPAPI_CONNECTION_URL_OTE)
 	cl.socketConfig.SetSystemEntity("1234")
 	return cl
 }
@@ -487,6 +491,7 @@ func (cl *APIClient) UseOTESystem() *APIClient {
 // UseLIVESystem method to set LIVE System for API communication
 // Usage of LIVE System is active by default.
 func (cl *APIClient) UseLIVESystem() *APIClient {
+	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
 	cl.socketConfig.SetSystemEntity("54cd")
 	return cl
 }

@@ -136,7 +136,7 @@ func TestGetSesssion2(t *testing.T) {
 
 func TestGetURL(t *testing.T) {
 	url := cl.GetURL()
-	if strings.Compare(url, ISPAPI_CONNECTION_URL) != 0 {
+	if strings.Compare(url, ISPAPI_CONNECTION_URL_LIVE) != 0 {
 		t.Error("TestGetURL: Expected url not matching.")
 	}
 }
@@ -175,7 +175,7 @@ func TestSetURL(t *testing.T) {
 	if strings.Compare(ISPAPI_CONNECTION_URL_PROXY, url) != 0 {
 		t.Error("TestSetURL: Expected url not matching.")
 	}
-	cl.SetURL(ISPAPI_CONNECTION_URL)
+	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
 }
 
 func TestSetOTP1(t *testing.T) {
@@ -334,7 +334,7 @@ func TestUseHighPerformanceConnectionSetup(t *testing.T) {
 func TestDefaultConnectionSetup(t *testing.T) {
 	cl.UseDefaultConnectionSetup()
 	val := cl.GetURL()
-	if val != ISPAPI_CONNECTION_URL {
+	if val != ISPAPI_CONNECTION_URL_LIVE {
 		t.Error("TestDefaultConnectionSetup: couldn't activate default connection setup")
 	}
 }
