@@ -1,3 +1,10 @@
+## [3.5.3](https://github.com/hexonet/go-sdk/compare/v3.5.2...v3.5.3) (2022-03-23)
+
+
+### Bug Fixes
+
+* **ot&e:** url updated for OT&E environment ([4aed2be](https://github.com/hexonet/go-sdk/commit/4aed2be94b4a81341d2bb18ca6939dd6b01dae84))
+
 ## [3.5.2](https://github.com/hexonet/go-sdk/compare/v3.5.1...v3.5.2) (2021-04-09)
 
 
