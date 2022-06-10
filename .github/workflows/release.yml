@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: "^1.15.7"
         #TODO govendor is deprecated -> go modules
@@ -46,15 +46,17 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Setup NodeJS LTS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          check-latest: true
       - name: Install dependencies
-        run: |
-          npm prune && npm i
+        run: npm ci
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

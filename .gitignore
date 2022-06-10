@@ -19,7 +19,6 @@ coverage.html
 
 # npm
 node_modules
-package-lock.json
 
 # go binary
 go-sdk
