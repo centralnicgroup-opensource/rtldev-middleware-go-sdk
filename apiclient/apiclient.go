@@ -345,6 +345,9 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	cfg := map[string]string{
 		"CONNECTION_URL": cl.socketURL,
 	}
+	if cl.debugMode {
+		fmt.Println("Connecting to: " + cfg["CONNECTION_URL"])
+	}
 	data := cl.GetPOSTData(newcmd, false)
 	secured := cl.GetPOSTData(newcmd, true)
 
