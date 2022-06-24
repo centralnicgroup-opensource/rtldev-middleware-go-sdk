@@ -1,3 +1,10 @@
+## [3.5.4](https://github.com/hexonet/go-sdk/compare/v3.5.3...v3.5.4) (2022-06-24)
+
+
+### Bug Fixes
+
+* **apiclient:** add CONNECTION_URL to debug output in debug mode ([3caac20](https://github.com/hexonet/go-sdk/commit/3caac2095677ff22d3c543f5b2d5a3577a7b99eb))
+
 ## [3.5.3](https://github.com/hexonet/go-sdk/compare/v3.5.2...v3.5.3) (2022-03-23)
 
 
