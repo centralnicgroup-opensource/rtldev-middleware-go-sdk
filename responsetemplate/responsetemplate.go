@@ -40,8 +40,11 @@ func NewResponseTemplate(raw string) *ResponseTemplate {
 // GetCode method to return the API response code
 func (rt *ResponseTemplate) GetCode() int {
 	h := rt.GetHash()
-	c, _ := strconv.Atoi(h["CODE"].(string))
-	return c
+	c, err := strconv.Atoi(h["CODE"].(string))
+	if err == nil {
+		return c
+	}
+	return 421
 }
 
 // GetDescription method to return the API response description
@@ -59,8 +62,10 @@ func (rt *ResponseTemplate) GetPlain() string {
 func (rt *ResponseTemplate) GetQueuetime() float64 {
 	h := rt.GetHash()
 	if val, ok := h["QUEUETIME"]; ok {
-		f, _ := strconv.ParseFloat(val.(string), 64)
-		return f
+		f, err := strconv.ParseFloat(val.(string), 64)
+		if err == nil {
+			return f
+		}
 	}
 	return 0.00
 }
@@ -74,8 +79,10 @@ func (rt *ResponseTemplate) GetHash() map[string]interface{} {
 func (rt *ResponseTemplate) GetRuntime() float64 {
 	h := rt.GetHash()
 	if val, ok := h["RUNTIME"]; ok {
-		f, _ := strconv.ParseFloat(val.(string), 64)
-		return f
+		f, err := strconv.ParseFloat(val.(string), 64)
+		if err == nil {
+			return f
+		}
 	}
 	return 0.00
 }
@@ -92,13 +99,13 @@ func (rt *ResponseTemplate) IsSuccess() bool {
 	return (c >= 200 && c <= 299)
 }
 
-//IsTmpError method to check if current API response represents a temporary error case
+// IsTmpError method to check if current API response represents a temporary error case
 func (rt *ResponseTemplate) IsTmpError() bool {
 	c := rt.GetCode()
 	return (c >= 400 && c <= 499)
 }
 
-//IsPending method to check if current operation is returned as pending
+// IsPending method to check if current operation is returned as pending
 func (rt *ResponseTemplate) IsPending() bool {
 	h := rt.GetHash()
 	if val, ok := h["PENDING"]; ok {
