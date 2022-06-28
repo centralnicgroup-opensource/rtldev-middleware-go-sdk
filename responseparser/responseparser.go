@@ -17,7 +17,7 @@ import (
 // Parse method to return plain API response parsed into hash format
 func Parse(r string) map[string]interface{} {
 	hash := make(map[string]interface{})
-	tmp := strings.Split(strings.Replace(r, "\r", "", -1), "\n")
+	tmp := strings.Split(strings.ReplaceAll(r, "\r", ""), "\n")
 	p1 := regexp.MustCompile(`^([^\=]*[^\t\= ])[\t ]*=[\t ]*(.*)$`)
 	p2 := regexp.MustCompile(`(?i)^property\[([^\]]*)\]\[([0-9]+)\]`)
 	properties := make(map[string][]string)
@@ -29,7 +29,7 @@ func Parse(r string) map[string]interface{} {
 			mm := p2.MatchString(property)
 			if mm {
 				groups2 := p2.FindStringSubmatch(property)
-				key := strings.Replace(strings.ToUpper(groups2[1]), "\\s", "", -1)
+				key := strings.ReplaceAll(strings.ToUpper(groups2[1]), "\\s", "")
 				// idx2 := strconv.Atoi(groups2[2])
 				list := make([]string, len(properties[key]))
 				copy(list, properties[key])

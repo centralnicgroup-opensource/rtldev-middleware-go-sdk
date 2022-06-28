@@ -186,11 +186,15 @@ func (r *Response) GetFirstRecordIndex() (int, error) {
 	if col != nil {
 		f, err := col.GetDataByIndex(0)
 		if err == nil {
-			idx, _ := strconv.Atoi(f)
-			return idx, nil
+			idx, err2 := strconv.Atoi(f)
+			if err2 == nil {
+				return idx, nil
+			}
+			return 0, errors.New("Could not find first record index")
 		}
 	}
-	if len(r.records) > 1 {
+	len := len(r.records)
+	if len > 1 {
 		return 0, nil
 	}
 	return 0, errors.New("Could not find first record index")
@@ -202,8 +206,11 @@ func (r *Response) GetLastRecordIndex() (int, error) {
 	if col != nil {
 		l, err := col.GetDataByIndex(0)
 		if err == nil {
-			idx, _ := strconv.Atoi(l)
-			return idx, nil
+			idx, err2 := strconv.Atoi(l)
+			if err2 == nil {
+				return idx, nil
+			}
+			return 0, errors.New("Could not find last record index")
 		}
 	}
 	len := r.GetRecordsCount()
@@ -343,8 +350,10 @@ func (r *Response) GetRecordsTotalCount() int {
 	if col != nil {
 		t, err := col.GetDataByIndex(0)
 		if err == nil {
-			c, _ := strconv.Atoi(t)
-			return c
+			c, err2 := strconv.Atoi(t)
+			if err2 == nil {
+				return c
+			}
 		}
 	}
 	return r.GetRecordsCount()
@@ -356,8 +365,9 @@ func (r *Response) GetRecordsLimitation() int {
 	if col != nil {
 		l, err := col.GetDataByIndex(0)
 		if err == nil {
-			lt, _ := strconv.Atoi(l)
-			return lt
+			if lt, err := strconv.Atoi(l); err == nil {
+				return lt
+			}
 		}
 	}
 	return r.GetRecordsCount()

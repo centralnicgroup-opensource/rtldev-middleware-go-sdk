@@ -27,13 +27,13 @@ import (
 )
 
 // ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup
-const ISPAPI_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi"
+const ISPAPI_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi" //nolint
 
 // ISPAPI_CONNECTION_URL_LIVE represents the url used for the default connection setup
-const ISPAPI_CONNECTION_URL_LIVE = "https://api.ispapi.net/api/call.cgi"
+const ISPAPI_CONNECTION_URL_LIVE = "https://api.ispapi.net/api/call.cgi" //nolint
 
 // ISPAPI_CONNECTION_URL_OTE represents the url used for the OT&E (demo system) connection setup
-const ISPAPI_CONNECTION_URL_OTE = "https://api-ote.ispapi.net/api/call.cgi"
+const ISPAPI_CONNECTION_URL_OTE = "https://api-ote.ispapi.net/api/call.cgi" //nolint
 
 var rtm = RTM.GetInstance()
 
@@ -104,7 +104,7 @@ func (cl *APIClient) GetProxy() (string, error) {
 	if exists {
 		return val, nil
 	}
-	return "", errors.New("No proxy configuration available.")
+	return "", errors.New("No proxy configuration available")
 }
 
 // SetReferer method to set a value for HTTP Header `Referer` to use for API communication
@@ -123,7 +123,7 @@ func (cl *APIClient) GetReferer() (string, error) {
 	if exists {
 		return val, nil
 	}
-	return "", errors.New("No configuration available for HTTP Header `Referer`.")
+	return "", errors.New("No configuration available for HTTP Header `Referer`")
 }
 
 // EnableDebugMode method to enable Debug Output to logger
@@ -156,8 +156,8 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string 
 		val := cmd[key]
 		tmp.WriteString(key)
 		tmp.WriteString("=")
-		val = strings.Replace(val, "\r", "", -1)
-		val = strings.Replace(val, "\n", "", -1)
+		val = strings.ReplaceAll(val, "\r", "")
+		val = strings.ReplaceAll(val, "\n", "")
 		tmp.WriteString(val)
 		tmp.WriteString("\n")
 	}
@@ -166,7 +166,7 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string 
 		re := regexp.MustCompile("PASSWORD=[^\n]+")
 		str = re.ReplaceAllString(str, "PASSWORD=***")
 	}
-	str = str[:len(str)-1] //remove \n at end
+	str = str[:len(str)-1] // Remove \n at end
 	return strings.Join([]string{
 		data,
 		url.QueryEscape("s_command"),
@@ -356,9 +356,8 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		Timeout: cl.socketTimeout,
 	}
 	if err == nil {
-		proxyUrl, err := url.Parse(val)
-		if err == nil {
-			client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+		if proxyconfigurl, parsingerr := url.Parse(val); parsingerr == nil {
+			client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyconfigurl)}
 		} else if cl.debugMode {
 			fmt.Println("Not able to parse configured Proxy URL: " + val)
 		}
@@ -507,14 +506,14 @@ func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]strin
 		if reflect.TypeOf(val).Kind() == reflect.Slice {
 			v := val.([]string)
 			for idx, str := range v {
-				str = strings.Replace(str, "\r", "", -1)
-				str = strings.Replace(str, "\n", "", -1)
+				str = strings.ReplaceAll(str, "\r", "")
+				str = strings.ReplaceAll(str, "\n", "")
 				newcmd[newKey+strconv.Itoa(idx)] = str
 			}
 		} else {
 			val := val.(string)
-			val = strings.Replace(val, "\r", "", -1)
-			val = strings.Replace(val, "\n", "", -1)
+			val = strings.ReplaceAll(val, "\r", "")
+			val = strings.ReplaceAll(val, "\n", "")
 			newcmd[newKey] = val
 		}
 	}
