@@ -9,7 +9,7 @@ package responsetemplate
 import (
 	"strconv"
 
-	rp "github.com/hexonet/go-sdk/v3/responseparser"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
 )
 
 // ResponseTemplate is a struct used to cover basic functionality to work with

@@ -12,9 +12,9 @@
     "node": ">=16.15.1",
     "npm": ">=8.11.1"
   },
-  "homepage": "https://github.com/hexonet/go-sdk",
-  "repository": "git@github.com:hexonet/go-sdk.git",
-  "bugs": "https://github.com/hexonet/go-sdk/issues",
+  "homepage": "https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk",
+  "repository": "git@github.com:centralnicgroup-opensource/rtldev-middleware-go-sdk.git",
+  "bugs": "https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/issues",
   "maintainers": [
     {
       "name": "Kai Schwarz",

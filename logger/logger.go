@@ -9,7 +9,7 @@ package logger
 import (
 	"fmt"
 
-	R "github.com/hexonet/go-sdk/v3/response"
+	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
 )
 
 // ilogger reflect basic interface for loggers

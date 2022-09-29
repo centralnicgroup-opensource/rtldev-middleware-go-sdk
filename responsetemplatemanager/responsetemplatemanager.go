@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	rp "github.com/hexonet/go-sdk/v3/responseparser"
-	rt "github.com/hexonet/go-sdk/v3/responsetemplate"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
 )
 
 // ResponseTemplateManager is a struct used to cover basic functionality to work with

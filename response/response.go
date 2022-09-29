@@ -14,9 +14,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hexonet/go-sdk/v3/column"
-	"github.com/hexonet/go-sdk/v3/record"
-	rt "github.com/hexonet/go-sdk/v3/responsetemplate"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/column"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/record"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
 )
 
 // Response is a struct used to cover basic functionality to work with

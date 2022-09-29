@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	RT "github.com/hexonet/go-sdk/v3/responsetemplate"
+	RT "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
 )
 
 var rtm = GetInstance()
