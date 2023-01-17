@@ -1,3 +1,10 @@
+## [3.5.5](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.4...v3.5.5) (2023-01-17)
+
+
+### Bug Fixes
+
+* **new release:** for new namespace/module name in go.mod ([345318c](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/345318c3b88269512ed9eda32eed7cdcf2d5831a))
+
 ## [3.5.4](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.3...v3.5.4) (2022-06-24)
 
 ### Bug Fixes
