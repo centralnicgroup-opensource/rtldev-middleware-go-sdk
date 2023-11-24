@@ -12,7 +12,7 @@
             "@semantic-release/exec",
             {
                 "prepareCmd": "./updateVersion.sh ${nextRelease.version} ${options.branch}",
-                "successCmd": "gulp publish --notes \"${encodeURIComponent(nextRelease.notes)}\""
+                "successCmd": "gulp publishNotification --update \"${nextRelease.version}\" --type \"${nextRelease.type}\" --notes \"${encodeURIComponent(nextRelease.notes)}\""
             }
         ],
         [
