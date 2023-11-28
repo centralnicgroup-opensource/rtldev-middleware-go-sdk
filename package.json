@@ -36,6 +36,9 @@
     "registration",
     "application"
   ],
+  "overrides": {
+    "chokidar": "^3.5.3"
+  },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^6.0.3",
