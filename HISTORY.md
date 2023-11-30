@@ -1,3 +1,10 @@
+## [3.5.6](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.5...v3.5.6) (2023-11-30)
+
+
+### Bug Fixes
+
+* **apiclient.go:** patched an issue where autoconvertidn was overriding commands ([3c7ec16](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/3c7ec16306a59842a48c999d57b53ad596d1d1c8))
+
 ## [3.5.5](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.4...v3.5.5) (2023-01-17)
 
 
