@@ -167,12 +167,14 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string 
 		str = re.ReplaceAllString(str, "PASSWORD=***")
 	}
 	str = str[:len(str)-1] // Remove \n at end
-	return strings.Join([]string{
-		data,
-		url.QueryEscape("s_command"),
-		"=",
-		url.QueryEscape(str),
-	}, "")
+	return strings.Join(
+		[]string{
+			data,
+			url.QueryEscape("s_command"),
+			"=",
+			url.QueryEscape(str),
+		}, "",
+	)
 }
 
 // GetSession method to get the API Session that is currently set
@@ -325,9 +327,11 @@ func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
 
 // Logout method to perform API logout to close API session in use
 func (cl *APIClient) Logout() *R.Response {
-	rr := cl.Request(map[string]interface{}{
-		"COMMAND": "EndSession",
-	})
+	rr := cl.Request(
+		map[string]interface{}{
+			"COMMAND": "EndSession",
+		},
+	)
 	if rr.IsSuccess() {
 		cl.SetSession("")
 	}
@@ -560,18 +564,20 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 	if len(toconvert) == 0 {
 		return cmd
 	}
-	r := cl.Request(map[string]interface{}{
-		"COMMAND": "ConvertIDN",
-		"DOMAIN":  toconvert,
-	})
+	r := cl.Request(
+		map[string]interface{}{
+			"COMMAND": "ConvertIDN",
+			"DOMAIN":  toconvert,
+		},
+	)
 	if !r.IsSuccess() {
 		return cmd
 	}
 	col := r.GetColumn("ACE")
 	if col != nil {
 		for idx, pc := range col.GetData() {
-			newcmd[idxs[idx]] = pc
+			cmd[idxs[idx]] = pc
 		}
 	}
-	return newcmd
+	return cmd
 }
