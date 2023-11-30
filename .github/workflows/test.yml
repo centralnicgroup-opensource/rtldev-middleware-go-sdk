@@ -1,56 +1,13 @@
-name: Linting & Testing
+name: Dependabot auto-merge & tests
 on:
-  workflow_call:
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 jobs:
-  test:
-    name: 🧪 Linting
-    runs-on: ${{ vars.RTLDEV_MW_CI_OS }}
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '${{ vars.RTLDEV_MW_CI_GOLANG_VERSION }}'
-          check-latest: true
-      - name: Super Linter Code Base
-        uses: github/super-linter/slim@v5
-        env:
-          FILTER_REGEX_INCLUDE: "/*|/scripts/*|updateVersion.sh|apiclient.go"
-          DEFAULT_BRANCH: master
-          VALIDATE_GO: true
-          VALIDATE_BASH: true
-          VALIDATE_ALL_CODEBASE: false
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run build
-        run: go build .
-      - name: Run vet
-        run: go vet .
-
-  test_matrix:
-    name: 🧪 Testing
-    runs-on: ${{ vars.RTLDEV_MW_CI_OS }}
-    needs: test
-    strategy:
-      matrix:
-        go-version: ${{ fromJson(vars.RTLDEV_MW_CI_GOLANG_MATRIX) }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-          check-latest: true
-      - name: Run build
-        run: go build .
-      - name: Run test
-        run: ./scripts/test-go.sh
+  tests:
+    uses: centralnicgroup-opensource/rtldev-middleware-shareable-workflows/.github/workflows/auto-merge-dependabot-pr.yml
+    secrets: inherit
+    with:
+      repository: ${{ github.repository }}
