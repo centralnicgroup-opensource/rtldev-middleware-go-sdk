@@ -533,9 +533,7 @@ var (
 
 // autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
 func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
-	newcmd := map[string]string{
-		"COMMAND": "ConvertIDN",
-	}
+	newCmd := make(map[string]string, len(cmd))
 
 	// don't convert for convertidn command to avoid endless loop
 	if isConvertIDNCommand := convertIDNPattern.MatchString(cmd["COMMAND"]); isConvertIDNCommand {
@@ -547,7 +545,7 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 
 	for key := range cmd {
 		val := newLinePattern.ReplaceAllString(cmd[key], "")
-		newcmd[key] = val
+		newCmd[key] = val
 
 		if !keysToConvertPattern.MatchString(key) {
 			continue
@@ -576,9 +574,9 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 	col := r.GetColumn("ACE")
 	if col != nil {
 		for idx, punyCoded := range col.GetData() {
-			newcmd[toConvertKeys[idx]] = punyCoded
+			newCmd[toConvertKeys[idx]] = punyCoded
 		}
 	}
 
-	return newcmd
+	return newCmd
 }
