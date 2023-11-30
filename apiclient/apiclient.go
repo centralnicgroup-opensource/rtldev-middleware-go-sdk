@@ -570,8 +570,8 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 	col := r.GetColumn("ACE")
 	if col != nil {
 		for idx, pc := range col.GetData() {
-			newcmd[idxs[idx]] = pc
+			cmd[idxs[idx]] = pc
 		}
 	}
-	return newcmd
+	return cmd
 }
