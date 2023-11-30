@@ -524,6 +524,13 @@ func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]strin
 	return newcmd
 }
 
+var (
+	convertIDNPattern    = regexp.MustCompile(`(?i)^CONVERTIDN$`)
+	keysToConvertPattern = regexp.MustCompile(`(?i)^(DOMAIN|NAMESERVER|DNSZONE)([0-9]*)$`)
+	newLinePattern       = regexp.MustCompile(`\r|\n`)
+	idnPattern           = regexp.MustCompile(`(?i)[^a-z0-9. -]+`)
+)
+
 // autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
 func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 	newcmd := map[string]string{
@@ -531,14 +538,9 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 	}
 
 	// don't convert for convertidn command to avoid endless loop
-	convertIDNPattern := regexp.MustCompile(`(?i)^CONVERTIDN$`)
 	if isConvertIDNCommand := convertIDNPattern.MatchString(cmd["COMMAND"]); isConvertIDNCommand {
 		return cmd
 	}
-
-	keysToConvertPattern := regexp.MustCompile(`(?i)^(DOMAIN|NAMESERVER|DNSZONE)([0-9]*)$`)
-	newLinePattern := regexp.MustCompile(`\r|\n`)
-	idnPattern := regexp.MustCompile(`(?i)[^a-z0-9. -]+`)
 
 	toConvertValues := make([]string, 0)
 	toConvertKeys := make([]string, 0)
