@@ -167,12 +167,14 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string 
 		str = re.ReplaceAllString(str, "PASSWORD=***")
 	}
 	str = str[:len(str)-1] // Remove \n at end
-	return strings.Join([]string{
-		data,
-		url.QueryEscape("s_command"),
-		"=",
-		url.QueryEscape(str),
-	}, "")
+	return strings.Join(
+		[]string{
+			data,
+			url.QueryEscape("s_command"),
+			"=",
+			url.QueryEscape(str),
+		}, "",
+	)
 }
 
 // GetSession method to get the API Session that is currently set
@@ -325,9 +327,11 @@ func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
 
 // Logout method to perform API logout to close API session in use
 func (cl *APIClient) Logout() *R.Response {
-	rr := cl.Request(map[string]interface{}{
-		"COMMAND": "EndSession",
-	})
+	rr := cl.Request(
+		map[string]interface{}{
+			"COMMAND": "EndSession",
+		},
+	)
 	if rr.IsSuccess() {
 		cl.SetSession("")
 	}
@@ -520,58 +524,59 @@ func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]strin
 	return newcmd
 }
 
+var (
+	convertIDNPattern    = regexp.MustCompile(`(?i)^CONVERTIDN$`)
+	keysToConvertPattern = regexp.MustCompile(`(?i)^(DOMAIN|NAMESERVER|DNSZONE)([0-9]*)$`)
+	newLinePattern       = regexp.MustCompile(`\r|\n`)
+	idnPattern           = regexp.MustCompile(`(?i)[^a-z0-9. -]+`)
+)
+
 // autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
 func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
-	newcmd := map[string]string{
-		"COMMAND": "ConvertIDN",
-	}
+	newCmd := make(map[string]string, len(cmd))
+
 	// don't convert for convertidn command to avoid endless loop
-	pattern := regexp.MustCompile(`(?i)^CONVERTIDN$`)
-	mm := pattern.MatchString(cmd["COMMAND"])
-	if mm {
+	if isConvertIDNCommand := convertIDNPattern.MatchString(cmd["COMMAND"]); isConvertIDNCommand {
 		return cmd
 	}
-	keys := []string{}
-	pattern = regexp.MustCompile(`(?i)^(DOMAIN|NAMESERVER|DNSZONE)([0-9]*)$`)
+
+	toConvertValues := make([]string, 0)
+	toConvertKeys := make([]string, 0)
+
 	for key := range cmd {
-		mm = pattern.MatchString(key)
-		if mm {
-			keys = append(keys, key)
+		val := newLinePattern.ReplaceAllString(cmd[key], "")
+		newCmd[key] = val
+
+		if !keysToConvertPattern.MatchString(key) {
+			continue
+		}
+
+		if isIDN := idnPattern.MatchString(val); isIDN {
+			toConvertValues = append(toConvertValues, val)
+			toConvertKeys = append(toConvertKeys, key)
 		}
 	}
-	if len(keys) == 0 {
+
+	if len(toConvertValues) == 0 {
 		return cmd
 	}
-	toconvert := []string{}
-	idxs := []string{}
-	pattern = regexp.MustCompile(`\r|\n`)
-	idnpattern := regexp.MustCompile(`(?i)[^a-z0-9. -]+`)
-	for i := 0; i < len(keys); i++ {
-		key := keys[i]
-		val := pattern.ReplaceAllString(cmd[key], "")
-		mm = idnpattern.MatchString(val)
-		if mm {
-			toconvert = append(toconvert, val)
-			idxs = append(idxs, key)
-		} else {
-			newcmd[key] = val
-		}
-	}
-	if len(toconvert) == 0 {
-		return cmd
-	}
-	r := cl.Request(map[string]interface{}{
-		"COMMAND": "ConvertIDN",
-		"DOMAIN":  toconvert,
-	})
+
+	r := cl.Request(
+		map[string]interface{}{
+			"COMMAND": "ConvertIDN",
+			"DOMAIN":  toConvertValues,
+		},
+	)
 	if !r.IsSuccess() {
 		return cmd
 	}
+
 	col := r.GetColumn("ACE")
 	if col != nil {
-		for idx, pc := range col.GetData() {
-			cmd[idxs[idx]] = pc
+		for idx, punyCoded := range col.GetData() {
+			newCmd[toConvertKeys[idx]] = punyCoded
 		}
 	}
-	return cmd
+
+	return newCmd
 }
