@@ -11,7 +11,8 @@ This module is a connector library for the insanely fast HEXONET Backend API. Fo
 
 ## Resources
 
-- [Documentation](https://centralnicgroup-public.github.io/rtldev-middleware-documentation/docs/hexonet/sdks/go-sdk/)
+- Documentation:
+  - [HEXONET](https://www.hexonet.support/hc/en-gb/articles/13651860201117-Self-Development-Kit-for-Go-Golang)
 - [Release Notes](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/releases)
 
 ## Authors
