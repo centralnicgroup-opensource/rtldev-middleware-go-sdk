@@ -10,14 +10,14 @@ import (
 	"strings"
 	"sync"
 
+	r "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
 	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
-	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
 )
 
 // ResponseTemplateManager is a struct used to cover basic functionality to work with
 // API response templates.
 type ResponseTemplateManager struct {
-	templates map[string]string
+	Templates map[string]string
 }
 
 var instance *ResponseTemplateManager
@@ -27,7 +27,7 @@ var once sync.Once
 func GetInstance() *ResponseTemplateManager {
 	once.Do(func() {
 		instance = &ResponseTemplateManager{
-			templates: map[string]string{
+			Templates: map[string]string{
 				"404":          generateTemplate("421", "Page not found"),
 				"500":          generateTemplate("500", "Internal server error"),
 				"empty":        generateTemplate("423", "Empty API response. Probably unreachable API end point {CONNECTION_URL}"),
@@ -62,30 +62,30 @@ func (rtm *ResponseTemplateManager) GenerateTemplate(code string, description st
 
 // AddTemplate method to add a template to the templates container
 func (rtm *ResponseTemplateManager) AddTemplate(id string, plain string) *ResponseTemplateManager {
-	rtm.templates[id] = plain
+	rtm.Templates[id] = plain
 	return rtm
 }
 
 // GetTemplate method to get a ResponseTemplate from templates container
-func (rtm *ResponseTemplateManager) GetTemplate(id string) *rt.ResponseTemplate {
+func (rtm *ResponseTemplateManager) GetTemplate(id string) *r.Response {
 	if rtm.HasTemplate(id) {
-		return rt.NewResponseTemplate(rtm.templates[id])
+		return r.NewResponse(rtm.Templates[id])
 	}
-	return rt.NewResponseTemplate(generateTemplate("500", "Response Template not found"))
+	return r.NewResponse(generateTemplate("500", "Response Template not found"))
 }
 
 // GetTemplates method to return a map covering all available response templates
-func (rtm *ResponseTemplateManager) GetTemplates() map[string]rt.ResponseTemplate {
-	tpls := map[string]rt.ResponseTemplate{}
-	for key := range rtm.templates {
-		tpls[key] = *rt.NewResponseTemplate(rtm.templates[key])
+func (rtm *ResponseTemplateManager) GetTemplates() map[string]r.Response {
+	tpls := map[string]r.Response{}
+	for key := range rtm.Templates {
+		tpls[key] = *r.NewResponse(rtm.Templates[key])
 	}
 	return tpls
 }
 
 // HasTemplate method to check if given template id exists in template container
 func (rtm *ResponseTemplateManager) HasTemplate(id string) bool {
-	if _, ok := rtm.templates[id]; ok {
+	if _, ok := rtm.Templates[id]; ok {
 		return true
 	}
 	return false
