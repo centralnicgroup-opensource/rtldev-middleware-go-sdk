@@ -9,20 +9,21 @@ package response
 import (
 	"errors"
 	"math"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/column"
 	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/record"
-	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetranslator"
 )
 
 // Response is a struct used to cover basic functionality to work with
 // API response data (or hardcoded API response data).
 type Response struct {
-	*rt.ResponseTemplate
+	Raw         string
+	Hash        map[string]interface{}
 	command     map[string]string
 	columnkeys  []string
 	columns     []column.Column
@@ -32,35 +33,23 @@ type Response struct {
 
 // NewResponse represents the constructor for struct Response.
 func NewResponse(raw string, cmd map[string]string, ph ...map[string]string) *Response {
+	newcmd := cmd;
+	_, exists := newcmd["PASSWORD"]
+	if exists {
+		newcmd["PASSWORD"] = "***"
+	}
+	newraw := rt.translate(raw, cmd, ph); 
 	r := &Response{
-		command:     cmd,
+		Raw:         newraw,
+		Hash:        rp.Parse(newraw),
+		command:     newcmd,
 		columnkeys:  []string{},
 		columns:     []column.Column{},
 		recordIndex: 0,
 		records:     []record.Record{},
 	}
-	_, exists := r.command["PASSWORD"]
-	if exists {
-		r.command["PASSWORD"] = "***"
-	}
-	r.ResponseTemplate = rt.NewResponseTemplate(raw)
 
-	// care about getting placeholder variables replaced
-	re := regexp.MustCompile(`\{[A-Z_]+\}`)
-	if re.MatchString(r.ResponseTemplate.Raw) {
-		phs := map[string]string{}
-		if len(ph) > 0 {
-			phs = ph[0]
-		}
-		newraw := r.ResponseTemplate.Raw
-		for key, val := range phs {
-			newraw = strings.ReplaceAll(newraw, "{"+key+"}", val)
-		}
-		newraw = re.ReplaceAllString(newraw, "")
-		r.ResponseTemplate = rt.NewResponseTemplate(newraw)
-	}
-
-	h := r.ResponseTemplate.GetHash()
+	h := r.GetHash()
 	if p, ok := h["PROPERTY"]; ok {
 		prop := p.(map[string][]string)
 		colKeys := []string{}
@@ -92,6 +81,85 @@ func NewResponse(raw string, cmd map[string]string, ph ...map[string]string) *Re
 		}
 	}
 	return r
+}
+
+// GetCode method to return the API response code
+func (r *Response) GetCode() int {
+	h := r.GetHash()
+	c, err := strconv.Atoi(h["CODE"].(string))
+	if err == nil {
+		return c
+	}
+	return 421
+}
+
+// GetDescription method to return the API response description
+func (r *Response) GetDescription() string {
+	h := r.GetHash()
+	return h["DESCRIPTION"].(string)
+}
+
+// GetPlain method to return raw API response
+func (r *Response) GetPlain() string {
+	return r.Raw
+}
+
+// GetQueuetime method to return API response queuetime
+func (r *Response) GetQueuetime() float64 {
+	h := r.GetHash()
+	if val, ok := h["QUEUETIME"]; ok {
+		f, err := strconv.ParseFloat(val.(string), 64)
+		if err == nil {
+			return f
+		}
+	}
+	return 0.00
+}
+
+// GetHash method to return API response in hash format
+func (r *Response) GetHash() map[string]interface{} {
+	return r.Hash
+}
+
+// GetRuntime method to return API response runtime
+func (r *Response) GetRuntime() float64 {
+	h := r.GetHash()
+	if val, ok := h["RUNTIME"]; ok {
+		f, err := strconv.ParseFloat(val.(string), 64)
+		if err == nil {
+			return f
+		}
+	}
+	return 0.00
+}
+
+// IsError method to check if API response represents an error case
+func (r *Response) IsError() bool {
+	c := r.GetCode()
+	return (c >= 500 && c <= 599)
+}
+
+// IsSuccess method to check if API response represents a success case
+func (r *Response) IsSuccess() bool {
+	c := r.GetCode()
+	return (c >= 200 && c <= 299)
+}
+
+// IsTmpError method to check if current API response represents a temporary error case
+func (r *Response) IsTmpError() bool {
+	c := r.GetCode()
+	return (c >= 400 && c <= 499)
+}
+
+// IsPending method to check if current operation is returned as pending
+func (r *Response) IsPending() bool {
+	h := r.GetHash()
+	if val, ok := h["PENDING"]; ok {
+		if val.(string) == "1" {
+			return true
+		}
+	}
+	return false
 }
 
 // AddColumn method to add a Column to the column list
