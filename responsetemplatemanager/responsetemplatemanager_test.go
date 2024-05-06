@@ -1,12 +1,11 @@
 package responsetemplatemanager
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"testing"
 
-	RT "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplate"
+	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
 )
 
 var rtm = GetInstance()
@@ -28,11 +27,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetTemplate(t *testing.T) {
-	tpl := rtm.GetTemplate("IwontExist")
-	if tpl.GetCode() != 500 {
+	tpl := RP.Parse(rtm.GetTemplate("IwontExist"))
+	if tpl["CODE"].(int) != 500 {
 		t.Error("Expected response code not matching")
 	}
-	if strings.Compare(tpl.GetDescription(), "Response Template not found") != 0 {
+	if strings.Compare(tpl["DESCRIPTION"].(string), "Response Template not found") != 0 {
 		t.Error("TestGetTemplate: Expected response description not matching")
 	}
 }
@@ -42,22 +41,21 @@ func TestGetTemplates(t *testing.T) {
 	tpls := rtm.GetTemplates()
 	for _, k := range defaultones {
 		if _, ok := tpls[k]; !ok {
-			t.Error(fmt.Sprintf("TestGetTemplates: Expected default template '%s' to exist.", k))
+			t.Errorf("TestGetTemplates: Expected default template '%s' to exist.", k)
 		}
 	}
 }
 
 func TestIsTemplateMatchHash(t *testing.T) {
-	tpl := RT.NewResponseTemplate("")
-	h := tpl.GetHash()
+	tpl := rtm.GetTemplate("empty")
+	h := RP.Parse(tpl)
 	if !rtm.IsTemplateMatchHash(h, "empty") {
 		t.Error("TestIsTemplateMatchHash: Expected hash response to match 'empty' response template.")
 	}
 }
 
 func TestIsTemplateMatchPlain(t *testing.T) {
-	tpl := RT.NewResponseTemplate("")
-	plain := tpl.GetPlain()
+	plain := rtm.GetTemplate("empty")
 	if !rtm.IsTemplateMatchPlain(plain, "empty") {
 		t.Error("TestIsTemplateMatchPlain: Expected plain response to match 'empty' response template.")
 	}

@@ -32,13 +32,18 @@ type Response struct {
 }
 
 // NewResponse represents the constructor for struct Response.
-func NewResponse(raw string, cmd map[string]string, ph ...map[string]string) *Response {
-	newcmd := cmd;
+func NewResponse(raw string, cmd map[string]string, phs ...map[string]string) *Response {
+	ph := map[string]string{}
+	if len(phs) > 0 {
+		ph = phs[0]
+	}
+
+	newcmd := cmd
 	_, exists := newcmd["PASSWORD"]
 	if exists {
 		newcmd["PASSWORD"] = "***"
 	}
-	newraw := rt.translate(raw, cmd, ph); 
+	newraw := rt.Translate(raw, cmd, ph)
 	r := &Response{
 		Raw:         newraw,
 		Hash:        rp.Parse(newraw),
@@ -261,8 +266,8 @@ func (r *Response) GetFirstRecordIndex() (int, error) {
 			return 0, errors.New("Could not find first record index")
 		}
 	}
-	len := len(r.records)
-	if len > 1 {
+	tlen := len(r.records)
+	if tlen > 1 {
 		return 0, nil
 	}
 	return 0, errors.New("Could not find first record index")
@@ -281,9 +286,9 @@ func (r *Response) GetLastRecordIndex() (int, error) {
 			return 0, errors.New("Could not find last record index")
 		}
 	}
-	len := r.GetRecordsCount()
-	if len > 0 {
-		return (len - 1), nil
+	tlen := r.GetRecordsCount()
+	if tlen > 0 {
+		return (tlen - 1), nil
 	}
 	return 0, errors.New("Could not find last record index")
 }
