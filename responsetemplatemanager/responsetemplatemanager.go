@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	r "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
 	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
 )
 
@@ -67,18 +66,18 @@ func (rtm *ResponseTemplateManager) AddTemplate(id string, plain string) *Respon
 }
 
 // GetTemplate method to get a ResponseTemplate from templates container
-func (rtm *ResponseTemplateManager) GetTemplate(id string) *r.Response {
+func (rtm *ResponseTemplateManager) GetTemplate(id string) string {
 	if rtm.HasTemplate(id) {
-		return r.NewResponse(rtm.Templates[id])
+		return rtm.Templates[id]
 	}
-	return r.NewResponse(generateTemplate("500", "Response Template not found"))
+	return generateTemplate("500", "Response Template not found")
 }
 
 // GetTemplates method to return a map covering all available response templates
-func (rtm *ResponseTemplateManager) GetTemplates() map[string]r.Response {
-	tpls := map[string]r.Response{}
+func (rtm *ResponseTemplateManager) GetTemplates() map[string]string {
+	tpls := map[string]string{}
 	for key := range rtm.Templates {
-		tpls[key] = *r.NewResponse(rtm.Templates[key])
+		tpls[key] = rtm.Templates[key]
 	}
 	return tpls
 }
@@ -94,7 +93,7 @@ func (rtm *ResponseTemplateManager) HasTemplate(id string) bool {
 // IsTemplateMatchHash method to check if given API response hash matches a given
 // template by code and description
 func (rtm *ResponseTemplateManager) IsTemplateMatchHash(tpl2 map[string]interface{}, id string) bool {
-	h := rtm.GetTemplate(id).GetHash()
+	h := rp.Parse(rtm.GetTemplate(id))
 	return ((h["CODE"] == tpl2["CODE"].(string)) &&
 		(h["DESCRIPTION"] == tpl2["DESCRIPTION"].(string)))
 }
@@ -102,8 +101,6 @@ func (rtm *ResponseTemplateManager) IsTemplateMatchHash(tpl2 map[string]interfac
 // IsTemplateMatchPlain method to check if given API plain response matches a given
 // template by code and description
 func (rtm *ResponseTemplateManager) IsTemplateMatchPlain(plain string, id string) bool {
-	h := rtm.GetTemplate(id).GetHash()
 	tpl2 := rp.Parse(plain)
-	return ((h["CODE"] == tpl2["CODE"].(string)) &&
-		(h["DESCRIPTION"] == tpl2["DESCRIPTION"].(string)))
+	return rtm.IsTemplateMatchHash(tpl2, id)
 }

@@ -71,16 +71,16 @@ func TestGetCommandPlainSecure(t *testing.T) {
 }
 
 func TestGetCurrentPageNumber(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	v, err := r.GetCurrentPageNumber()
 	if err != nil || v != 1 {
-		t.Error(fmt.Sprintf("TestGetCurrentPageNumber: Expected current page number '%d' to be '1'.", v))
+		t.Errorf("TestGetCurrentPageNumber: Expected current page number '%d' to be '1'.", v)
 	}
 }
 
 func TestGetCurrentPageNumber2(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetCurrentPageNumber()
 	if err == nil {
@@ -89,7 +89,7 @@ func TestGetCurrentPageNumber2(t *testing.T) {
 }
 
 func TestGetFirstRecordIndex1(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetFirstRecordIndex()
 	if err == nil {
@@ -98,7 +98,7 @@ func TestGetFirstRecordIndex1(t *testing.T) {
 }
 
 func TestGetFirstRecordIndex2(t *testing.T) {
-	h := rtm.GetTemplate("OK").GetHash()
+	h := RP.Parse(rtm.GetTemplate("OK"))
 	h["PROPERTY"] = map[string][]string{
 		"DOMAIN": {"mydomain1.com", "mydomain2.com"},
 	}
@@ -115,7 +115,7 @@ func TestGetFirstRecordIndex2(t *testing.T) {
 }
 
 func TestGetColumms(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	cols := r.GetColumns()
 	if len(cols) != 6 {
@@ -124,7 +124,7 @@ func TestGetColumms(t *testing.T) {
 }
 
 func TestGetColumnIndex1(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	data, err := r.GetColumnIndex("DOMAIN", 0)
 	if err != nil {
@@ -136,7 +136,7 @@ func TestGetColumnIndex1(t *testing.T) {
 }
 
 func TestGetColumnIndex2(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetColumnIndex("COLUMN_NOT_EXISTS", 0)
 	if err == nil {
@@ -145,7 +145,7 @@ func TestGetColumnIndex2(t *testing.T) {
 }
 
 func TestGetColumnKeys(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	colkeys := r.GetColumnKeys()
 	if len(colkeys) != 6 {
@@ -166,7 +166,7 @@ func TestGetColumnKeys(t *testing.T) {
 }
 
 func TestGetCurrentRecord(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	rec := r.GetCurrentRecord()
 	d := rec.GetData()
@@ -185,7 +185,7 @@ func TestGetCurrentRecord(t *testing.T) {
 }
 
 func TestGetCurrentRecord2(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	rec := r.GetCurrentRecord()
 	if rec != nil {
@@ -194,7 +194,7 @@ func TestGetCurrentRecord2(t *testing.T) {
 }
 
 func TestGetListHash(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	lh := r.GetListHash()
 	if _, ok := lh["LIST"]; !ok {
@@ -219,7 +219,7 @@ func TestGetListHash(t *testing.T) {
 }
 
 func TestGetNextRecord(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	rec := r.GetNextRecord()
 	expected := map[string]string{"DOMAIN": "0-be-s01-0.com"}
@@ -233,7 +233,7 @@ func TestGetNextRecord(t *testing.T) {
 }
 
 func TestGetPagination(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	pager := r.GetPagination()
 	if pager == nil {
@@ -255,7 +255,7 @@ func TestGetPagination(t *testing.T) {
 }
 
 func TestGetPreviousRecord(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	r.GetNextRecord()
 	d := r.GetPreviousRecord().GetData()
@@ -277,7 +277,7 @@ func TestGetPreviousRecord(t *testing.T) {
 }
 
 func TestHasNextPage1(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	if r.HasNextPage() {
 		t.Error("Expected no next page to exist.")
@@ -285,7 +285,7 @@ func TestHasNextPage1(t *testing.T) {
 }
 
 func TestHasNextPage2(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	if !r.HasNextPage() {
 		t.Error("Expected next page to exist.")
@@ -293,7 +293,7 @@ func TestHasNextPage2(t *testing.T) {
 }
 
 func TestHasPreviousPage1(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	if r.HasPreviousPage() {
 		t.Error("Expected no previous page to exist.")
@@ -301,7 +301,7 @@ func TestHasPreviousPage1(t *testing.T) {
 }
 
 func TestHasPreviousPage2(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	if r.HasPreviousPage() {
 		t.Error("Expected no previous page to exist.")
@@ -309,7 +309,7 @@ func TestHasPreviousPage2(t *testing.T) {
 }
 
 func TestGetLastRecordIndex1(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetLastRecordIndex()
 	if err == nil {
@@ -318,7 +318,7 @@ func TestGetLastRecordIndex1(t *testing.T) {
 }
 
 func TestGetLastRecordIndex2(t *testing.T) {
-	h := rtm.GetTemplate("OK").GetHash()
+	h := RP.Parse(rtm.GetTemplate("OK"))
 	h["PROPERTY"] = map[string][]string{
 		"DOMAIN": {"mydomain1.com", "mydomain2.com"},
 	}
@@ -333,7 +333,7 @@ func TestGetLastRecordIndex2(t *testing.T) {
 }
 
 func TestGetNextPageNumber1(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetNextPageNumber()
 	if err == nil {
@@ -342,7 +342,7 @@ func TestGetNextPageNumber1(t *testing.T) {
 }
 
 func TestGetNextPageNumber2(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	np, err := r.GetNextPageNumber()
 	if err != nil {
@@ -354,7 +354,7 @@ func TestGetNextPageNumber2(t *testing.T) {
 }
 
 func TestGetNumberOfPages(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	pgs := r.GetNumberOfPages()
 	if pgs != 0 {
@@ -363,7 +363,7 @@ func TestGetNumberOfPages(t *testing.T) {
 }
 
 func TestGetPreviousPageNumber(t *testing.T) {
-	plain := rtm.GetTemplate("OK").GetPlain()
+	plain := rtm.GetTemplate("OK")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetPreviousPageNumber()
 	if err == nil {
@@ -372,7 +372,7 @@ func TestGetPreviousPageNumber(t *testing.T) {
 }
 
 func TestGetPreviousPageNumber2(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	_, err := r.GetPreviousPageNumber()
 	if err == nil {
@@ -381,7 +381,7 @@ func TestGetPreviousPageNumber2(t *testing.T) {
 }
 
 func TestRewindRecordList(t *testing.T) {
-	plain := rtm.GetTemplate("listP0").GetPlain()
+	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	pr := r.GetPreviousRecord()
 	if pr != nil {

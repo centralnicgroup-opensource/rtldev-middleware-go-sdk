@@ -55,11 +55,11 @@ func TestGetPOSTDataSecured(t *testing.T) {
 	cl.SetCredentials("", "")
 }
 
-func TestEnableDebugMode(t *testing.T) {
+func TestEnableDebugMode(_ *testing.T) {
 	cl.EnableDebugMode()
 }
 
-func TestDisableDebugMode(t *testing.T) {
+func TestDisableDebugMode(_ *testing.T) {
 	cl.DisableDebugMode()
 }
 
@@ -417,10 +417,11 @@ func TestLogout1(t *testing.T) {
 
 func TestLogout2(t *testing.T) {
 	tpl := R.NewResponse(
-		rtm.GetTemplate("login200").GetPlain(),
+		rtm.GetTemplate("login200"),
 		map[string]string{
 			"COMMAND": "StartSession",
 		},
+		nil,
 	)
 	rec := tpl.GetRecord(0)
 	sessid, err := rec.GetDataByKey("SESSION")
@@ -438,9 +439,9 @@ func TestLogout2(t *testing.T) {
 // validate against mocked API response [200 < r.statusCode > 299] // need mocking
 // validate against mocked API response [200 < r.statusCode > 299, no debug] // need mocking
 
-func TestRequestNextResponsePage1(t *testing.T) {
+func TestRequestNextResponsePage1(t *testing.T) { // nolint: gocyclo
 	r := R.NewResponse(
-		rtm.GetTemplate("listP0").GetPlain(),
+		rtm.GetTemplate("listP0"),
 		map[string]string{
 			"COMMAND": "QueryDomainList",
 			"LIMIT":   "2",
@@ -497,7 +498,7 @@ func TestRequestNextResponsePage1(t *testing.T) {
 
 func TestRequestNextResponsePage2(t *testing.T) {
 	r := R.NewResponse(
-		rtm.GetTemplate("listP0").GetPlain(),
+		rtm.GetTemplate("listP0"),
 		map[string]string{
 			"COMMAND": "QueryDomainList",
 			"LIMIT":   "2",
@@ -511,10 +512,10 @@ func TestRequestNextResponsePage2(t *testing.T) {
 	}
 }
 
-func TestRequestNextResponsePage3(t *testing.T) {
+func TestRequestNextResponsePage3(t *testing.T) { // nolint: gocyclo
 	cl.DisableDebugMode()
 	r := R.NewResponse(
-		rtm.GetTemplate("listP0").GetPlain(),
+		rtm.GetTemplate("listP0"),
 		map[string]string{
 			"COMMAND": "QueryDomainList",
 			"LIMIT":   "2",

@@ -7,9 +7,10 @@
 package responsetranslator
 
 import (
-  "regexp"
-  "strings"
-  RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
+	"regexp"
+	"strings"
+
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
 )
 
 type ResponseTranslator struct {
@@ -28,120 +29,120 @@ var descriptionRegexMap = map[string]string{
 	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY AGE OF THE DOMAIN":                            "This Domain Name is within 60 days of initial registration. Initiating a Transfer is therefore impossible.",
 	"Attribute value is not unique; DOMAIN is already assigned to your account":                               "You cannot transfer a domain that is already on your account at the registrar's system.",
 	// CNR
-	"Missing required attribute; premium domain name. please provide required parameters":                     "Confirm the Premium pricing by providing the necessary premium domain price data.",
-};
+	"Missing required attribute; premium domain name. please provide required parameters": "Confirm the Premium pricing by providing the necessary premium domain price data.",
+}
 
-var descriptionRegexMapSkipQuote = map[string]string {
+var descriptionRegexMapSkipQuote = map[string]string{
 	// HX
 	"Invalid attribute value syntax; resource record [(.+)]":               "Invalid Syntax for DNSZone Resource Record: $1",
 	"Missing required attribute; CLASS(?:=| [MUST BE )PREMIUM_([w+]+)[s]]": "Confirm the Premium pricing by providing the parameter CLASS with the value PREMIUM_$1.",
 	"Syntax error in Parameter DOMAIN ((.+))":                              "The Domain Name $1 is invalid.",
-};
+}
 
 // Translate function for plain api response
 func Translate(raw string, cmd map[string]string, phs ...map[string]string) string {
-  ph := map[string]string{};
-  if len(phs) > 0 {
-    ph = phs[0]
-  }
+	ph := map[string]string{}
+	if len(phs) > 0 {
+		ph = phs[0]
+	}
 
-	httperror := "";
-  newraw := raw;
-  if len(raw) == 0 {
-    newraw = "empty";
-  }
-  // Hint: Empty API Response (replace {CONNECTION_URL} later)
+	httperror := ""
+	newraw := raw
+	if len(raw) == 0 {
+		newraw = "empty"
+	}
+	// Hint: Empty API Response (replace {CONNECTION_URL} later)
 
-  // curl error handling
-  isHTTPError := false;
-  if (newraw[0:10] == "httperror|") {
-    isHTTPError = true;
-    httperror = strings.Replace(newraw, "httperror|", "", 1);
-    newraw = "httperror";
-  }
+	// curl error handling
+	isHTTPError := false
+	if newraw[0:10] == "httperror|" {
+		isHTTPError = true
+		httperror = strings.Replace(newraw, "httperror|", "", 1)
+		newraw = "httperror"
+	}
 
-  // Explicit call for a static template
-  rtm := RTM.GetInstance()
-  if (rtm.HasTemplate(newraw)) {
-    // don't use getTemplate as it leads to endless loop as of again
-    // creating a response instance
-    newraw = rtm.Templates[newraw];
-    if isHTTPError && len(httperror) > 0 {
-        newraw = strings.Replace(newraw, "{HTTPERROR}", " (" + httperror + ")", -1);
-    }
-  }
+	// Explicit call for a static template
+	rtm := RTM.GetInstance()
+	if rtm.HasTemplate(newraw) {
+		// don't use getTemplate as it leads to endless loop as of again
+		// creating a response instance
+		newraw = rtm.Templates[newraw]
+		if isHTTPError && len(httperror) > 0 {
+			newraw = strings.ReplaceAll(newraw, "{HTTPERROR}", " ("+httperror+")")
+		}
+	}
 
-  if rtm.hasTemplate("invalid") {
-    // Missing CODE or DESCRIPTION in API Response
-    pattern1 := regexp.MustCompile(`(?i)description[\s]*=`)
-    pattern2 := regexp.MustCompile(`(?i)code[\s]*=`)
-    pattern3 := regexp.MustCompile(`(?i)description[\s]*=\r\n`)
-    
-    if pattern1.FindString(newraw) == "" || pattern2.FindString(newraw) == "" || pattern3.FindString(newraw) != "" {
-      newraw = rtm.Templates["invalid"]
-    }   
-  }
+	if rtm.HasTemplate("invalid") {
+		// Missing CODE or DESCRIPTION in API Response
+		pattern1 := regexp.MustCompile(`(?i)description[\s]*=`)
+		pattern2 := regexp.MustCompile(`(?i)code[\s]*=`)
+		pattern3 := regexp.MustCompile(`(?i)description[\s]*=\r\n`)
 
-  // Iterate through the description-to-regex mapping
-  // generic API response description rewrite
-  data := "";
-  for regex, val := range descriptionRegexMap {
-    // Escape the pattern and attempt to find a match for it
-    data = FindMatch(regexp.QuoteMeta(regex), newraw, val, cmd, ph);
+		if pattern1.FindString(newraw) == "" || pattern2.FindString(newraw) == "" || pattern3.FindString(newraw) != "" {
+			newraw = rtm.Templates["invalid"]
+		}
+	}
 
-    // If a match is found, exit the inner loop
-    if len(data) > 0 {
-      newraw = data;
-      break;
-    }
-  }
+	// Iterate through the description-to-regex mapping
+	// generic API response description rewrite
+	data := ""
+	for regex, val := range descriptionRegexMap {
+		// Escape the pattern and attempt to find a match for it
+		data = FindMatch(regexp.QuoteMeta(regex), newraw, val, cmd, ph)
 
-  for regex, val := range descriptionRegexMapSkipQuote {
-    // Attempt to find a match using the temporary pattern
-    data = FindMatch(regex, newraw, "" + val, cmd, ph);
+		// If a match is found, exit the inner loop
+		if len(data) > 0 {
+			newraw = data
+			break
+		}
+	}
 
-    // If a match is found, exit the inner loop
-    if len(data) > 0 {
-      newraw = data;
-      break;
-    }
-  }
+	for regex, val := range descriptionRegexMapSkipQuote {
+		// Attempt to find a match using the temporary pattern
+		data = FindMatch(regex, newraw, ""+val, cmd, ph)
 
-  pattern := regexp.MustCompile(`\{.+\}`)
-  return pattern.ReplaceAllString(newraw, "");
+		// If a match is found, exit the inner loop
+		if len(data) > 0 {
+			newraw = data
+			break
+		}
+	}
+
+	pattern := regexp.MustCompile(`\{.+\}`)
+	return pattern.ReplaceAllString(newraw, "")
 }
 
 func FindMatch(regex string, newraw string, val string, cmd map[string]string, ph map[string]string) string {
-    // match the response for given description
-    // NOTE: we match if the description starts with the given description
-    // it would also match if it is followed by additional text
-    ret := "";
-    qregex := regexp.MustCompile("(i?)descriptions*=s*" + regex + "([^\\r\\n]+)?")
+	// match the response for given description
+	// NOTE: we match if the description starts with the given description
+	// it would also match if it is followed by additional text
+	ret := ""
+	qregex := regexp.MustCompile("(i?)descriptions*=s*" + regex + "([^\\r\\n]+)?")
 
-    if (qregex.FindString(newraw) != "") {
-      // If "COMMAND" exists in cmd, replace "{COMMAND}" in val
-      myval, ok := cmd["COMMAND"]
-      if ok {
-        val = strings.Replace(val, "{COMMAND}", myval, -1)
-      }
+	if qregex.FindString(newraw) != "" {
+		// If "COMMAND" exists in cmd, replace "{COMMAND}" in val
+		myval, ok := cmd["COMMAND"]
+		if ok {
+			val = strings.ReplaceAll(val, "{COMMAND}", myval)
+		}
 
-      // If $newraw matches $qregex, replace with "description=" . $val
-      tmp := qregex.ReplaceAllString(newraw, "description=" + val)
-      if (newraw != tmp) {
-        ret = tmp
-      }
-    }
+		// If $newraw matches $qregex, replace with "description=" . $val
+		tmp := qregex.ReplaceAllString(newraw, "description="+val)
+		if newraw != tmp {
+			ret = tmp
+		}
+	}
 
-    // Generic replacing of placeholder vars
-    vregex := regexp.MustCompile(`\{.+\}`)
-    if (vregex.FindString(newraw) != "") {
-      for tkey, tval := range ph {
-        newraw = strings.Replace(newraw, "{" + tkey + "}", tval, -1)
-      }
-      
-      newraw = vregex.ReplaceAllString(newraw, "")
-      ret = newraw
-    }
+	// Generic replacing of placeholder vars
+	vregex := regexp.MustCompile(`\{.+\}`)
+	if vregex.FindString(newraw) != "" {
+		for tkey, tval := range ph {
+			newraw = strings.ReplaceAll(newraw, "{"+tkey+"}", tval)
+		}
 
-    return ret
-  }
+		newraw = vregex.ReplaceAllString(newraw, "")
+		ret = newraw
+	}
+
+	return ret
+}

@@ -9,7 +9,7 @@ package apiclient
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -364,7 +364,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	}
 	req, err := http.NewRequest("POST", cfg["CONNECTION_URL"], strings.NewReader(data))
 	if err != nil {
-		tpl := rtm.GetTemplate("httperror").GetPlain()
+		tpl := rtm.GetTemplate("httperror")
 		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
 			cl.logger.Log(secured, r, err.Error())
@@ -380,7 +380,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	}
 	resp, err2 := client.Do(req)
 	if err2 != nil {
-		tpl := rtm.GetTemplate("httperror").GetPlain()
+		tpl := rtm.GetTemplate("httperror")
 		r := R.NewResponse(tpl, newcmd, cfg)
 		if cl.debugMode {
 			cl.logger.Log(secured, r, err2.Error())
@@ -389,9 +389,9 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		response, err := ioutil.ReadAll(resp.Body)
+		response, err := io.ReadAll(resp.Body)
 		if err != nil {
-			tpl := rtm.GetTemplate("httperror").GetPlain()
+			tpl := rtm.GetTemplate("httperror")
 			r := R.NewResponse(tpl, newcmd, cfg)
 			if cl.debugMode {
 				cl.logger.Log(secured, r, err.Error())
@@ -404,7 +404,7 @@ func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
 		}
 		return r
 	}
-	tpl := rtm.GetTemplate("httperror").GetPlain()
+	tpl := rtm.GetTemplate("httperror")
 	r := R.NewResponse(tpl, newcmd, cfg)
 	if cl.debugMode {
 		cl.logger.Log(secured, r)
