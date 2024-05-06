@@ -40,8 +40,7 @@ func TestPlaceHolderReplacements(t *testing.T) {
 	}
 
 	r = NewResponse("", map[string]string{"COMMAND": "StatusAccount"}, map[string]string{"CONNECTION_URL": "123HXPHFOUND123"})
-	re = regexp.MustCompile(`123HXPHFOUND123`)
-	if !re.MatchString(r.GetDescription()) {
+	if !strings.Contains(r.GetDescription(), "123HXPHFOUND123") {
 		t.Error("TestPlaceHolderReplacements: CONNECTION_URL place holder not removed.\n" + r.GetDescription())
 	}
 }

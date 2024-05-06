@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 
 func TestGetTemplate(t *testing.T) {
 	tpl := RP.Parse(rtm.GetTemplate("IwontExist"))
-	if tpl["CODE"].(int) != 500 {
+	if tpl["CODE"].(string) != "500" {
 		t.Error("Expected response code not matching")
 	}
 	if strings.Compare(tpl["DESCRIPTION"].(string), "Response Template not found") != 0 {

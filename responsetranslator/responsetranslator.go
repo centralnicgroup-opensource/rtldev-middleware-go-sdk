@@ -55,7 +55,7 @@ func Translate(raw string, cmd map[string]string, phs ...map[string]string) stri
 
 	// curl error handling
 	isHTTPError := false
-	if newraw[0:10] == "httperror|" {
+	if strings.HasPrefix(newraw, "httperror|") {
 		isHTTPError = true
 		httperror = strings.Replace(newraw, "httperror|", "", 1)
 		newraw = "httperror"
