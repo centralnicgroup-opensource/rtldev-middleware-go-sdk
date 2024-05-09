@@ -91,12 +91,13 @@ func TestAutoIDNConvertCommand(t *testing.T) {
 	cl.UseOTESystem()
 	r := cl.Request(map[string]interface{}{
 		"COMMAND": "CheckDomains",
-		"DOMAiN":  []string{"example.com", "dömäin.example", "example.net"},
+		"DOMAIN":  []string{"example.com", "dömäin.example", "example.net"},
 	})
 	if !r.IsSuccess() || r.GetCode() != 200 || r.GetDescription() != "Command completed successfully" {
 		t.Error("TestRequestFlattenCommand: Expected response to succeed." + strconv.Itoa(r.GetCode()) + r.GetDescription())
 	}
 	cmd := r.GetCommand()
+
 	val1, exists1 := cmd["DOMAIN0"]
 	val2, exists2 := cmd["DOMAIN1"]
 	val3, exists3 := cmd["DOMAIN2"]
