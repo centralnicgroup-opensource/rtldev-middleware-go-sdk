@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	IDN "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/idntranslator"
 	LG "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/logger"
 	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
 	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
@@ -522,9 +523,6 @@ func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]strin
 
 // autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
 func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
-	newcmd := map[string]string{
-		"COMMAND": "ConvertIDN",
-	}
 	// don't convert for convertidn command to avoid endless loop
 	pattern := regexp.MustCompile(`(?i)^CONVERTIDN$`)
 	mm := pattern.MatchString(cmd["COMMAND"])
@@ -553,25 +551,15 @@ func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
 		if mm {
 			toconvert = append(toconvert, val)
 			idxs = append(idxs, key)
-		} else {
-			newcmd[key] = val
 		}
 	}
 	if len(toconvert) == 0 {
 		return cmd
 	}
-	r := cl.Request(map[string]interface{}{
-		"COMMAND": "ConvertIDN",
-		"DOMAIN":  toconvert,
-	})
-	if !r.IsSuccess() {
-		return cmd
-	}
-	col := r.GetColumn("ACE")
-	if col != nil {
-		for idx, pc := range col.GetData() {
-			cmd[idxs[idx]] = pc
-		}
+	r := IDN.Convert(toconvert)
+
+	for idx, pc := range r {
+		cmd[idxs[idx]] = pc.PUNYCODE
 	}
 	return cmd
 }

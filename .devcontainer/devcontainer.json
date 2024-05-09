@@ -1,0 +1,32 @@
+{
+    "name": "rtldev-middleware-go-sdk",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "go.gopath": "/go",
+                "go.goroot": "/usr/local/go"
+            },
+            "extensions": [
+                "golang.go"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "forwardPorts": [
+        8080
+    ],
+    "mounts": [
+		"source=${localEnv:HOME}${localEnv:USERPROFILE},target=/WSL_USER,type=bind,consistency=cached"
+	],
+    "postCreateCommand": "zsh ./.devcontainer/post-create.sh",
+    "runArgs": ["--name", "rtldev-middleware-go-sdk"],
+    "remoteUser": "vscode"
+}

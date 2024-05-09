@@ -21,4 +21,4 @@ coverage.html
 node_modules
 
 # go binary
-go-sdk
+rtldev-middleware-go-sdk

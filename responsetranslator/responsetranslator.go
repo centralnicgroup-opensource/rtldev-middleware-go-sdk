@@ -34,9 +34,9 @@ var descriptionRegexMap = map[string]string{
 
 var descriptionRegexMapSkipQuote = map[string]string{
 	// HX
-	"Invalid attribute value syntax; resource record [(.+)]":               "Invalid Syntax for DNSZone Resource Record: $1",
-	"Missing required attribute; CLASS(?:=| [MUST BE )PREMIUM_([w+]+)[s]]": "Confirm the Premium pricing by providing the parameter CLASS with the value PREMIUM_$1.",
-	"Syntax error in Parameter DOMAIN ((.+))":                              "The Domain Name $1 is invalid.",
+	`Invalid attribute value syntax; resource record \[(.+)\]`:                  "Invalid Syntax for DNSZone Resource Record: $1",
+	`Missing required attribute; CLASS(?:=| \[MUST BE )PREMIUM_([\w\+]+)[\s\]]`: "Confirm the Premium pricing by providing the parameter CLASS with the value PREMIUM_$1.",
+	`Syntax error in Parameter DOMAIN \((.+)\)`:                                 "The Domain Name $1 is invalid.",
 }
 
 // Translate function for plain api response
@@ -85,11 +85,12 @@ func Translate(raw string, cmd map[string]string, phs ...map[string]string) stri
 
 	// Iterate through the description-to-regex mapping
 	// generic API response description rewrite
+	// Iterate through the description-to-regex mapping with quoted regex
 	data := ""
 	for regex, val := range descriptionRegexMap {
-		// Escape the pattern and attempt to find a match for it
-		data = FindMatch(regexp.QuoteMeta(regex), newraw, val, cmd, ph)
-
+		// Escape the regex pattern and attempt to find a match
+		escapedRegex := regexp.QuoteMeta(regex)
+		data = FindMatch(escapedRegex, newraw, val, cmd, ph)
 		// If a match is found, exit the inner loop
 		if len(data) > 0 {
 			newraw = data
@@ -97,8 +98,8 @@ func Translate(raw string, cmd map[string]string, phs ...map[string]string) stri
 		}
 	}
 
+	// Iterate through the description-to-regex mapping without quotes
 	for regex, val := range descriptionRegexMapSkipQuote {
-		// Attempt to find a match using the temporary pattern
 		data = FindMatch(regex, newraw, ""+val, cmd, ph)
 
 		// If a match is found, exit the inner loop
@@ -117,7 +118,7 @@ func FindMatch(regex string, newraw string, val string, cmd map[string]string, p
 	// NOTE: we match if the description starts with the given description
 	// it would also match if it is followed by additional text
 	ret := ""
-	qregex := regexp.MustCompile("(i?)descriptions*=s*" + regex + "([^\\r\\n]+)?")
+	qregex := regexp.MustCompile("(?i)description\\s*=\\s*" + regex + "([^\\r\\n]+)?")
 
 	if qregex.FindString(newraw) != "" {
 		// If "COMMAND" exists in cmd, replace "{COMMAND}" in val
@@ -133,15 +134,19 @@ func FindMatch(regex string, newraw string, val string, cmd map[string]string, p
 		}
 	}
 
+	// Skipquote entries should not replace placeholder variables
+	if strings.HasPrefix(val, "SkipPregQuote") {
+		return ret
+	}
+
 	// Generic replacing of placeholder vars
-	vregex := regexp.MustCompile(`\{.+\}`)
-	if vregex.FindString(newraw) != "" {
+	vregex := regexp.MustCompile(`\{[^}]+\}`)
+	if vregex.FindString(ret) != "" {
 		for tkey, tval := range ph {
-			newraw = strings.ReplaceAll(newraw, "{"+tkey+"}", tval)
+			ret = strings.ReplaceAll(ret, "{"+tkey+"}", tval)
 		}
 
-		newraw = vregex.ReplaceAllString(newraw, "")
-		ret = newraw
+		ret = vregex.ReplaceAllString(ret, "")
 	}
 
 	return ret
