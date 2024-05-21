@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/column"
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/record"
-	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
-	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetranslator"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/column"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/record"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetranslator"
 )
 
 // Response is a struct used to cover basic functionality to work with

@@ -3,7 +3,7 @@ package idntranslator_test
 import (
 	"testing"
 
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/idntranslator"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/idntranslator"
 
 	"github.com/stretchr/testify/assert"
 )

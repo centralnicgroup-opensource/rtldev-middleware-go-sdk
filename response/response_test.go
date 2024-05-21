@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
+	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
 )
 
 var rtm = RTM.GetInstance()

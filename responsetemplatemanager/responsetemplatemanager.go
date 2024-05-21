@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
 )
 
 // ResponseTemplateManager is a struct used to cover basic functionality to work with
