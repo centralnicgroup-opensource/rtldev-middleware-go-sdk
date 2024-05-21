@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
+	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
 )
 
 var rtm = GetInstance()

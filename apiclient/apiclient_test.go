@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
+	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/response"
 )
 
 var cl = NewAPIClient()

@@ -20,11 +20,11 @@ import (
 	"strings"
 	"time"
 
-	IDN "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/idntranslator"
-	LG "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/logger"
-	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
-	SC "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/socketconfig"
+	IDN "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/idntranslator"
+	LG "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/logger"
+	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/response"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
+	SC "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/socketconfig"
 )
 
 // ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup

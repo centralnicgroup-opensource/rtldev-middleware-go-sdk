@@ -3,9 +3,9 @@ package responsetranslator_test
 import (
 	"testing"
 
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/response"
-	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responseparser"
-	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetranslator"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/response"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetranslator"
 )
 
 func TestTranslate(t *testing.T) {

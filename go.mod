@@ -1,4 +1,4 @@
-module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3
+module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4
 
 go 1.22.3
 

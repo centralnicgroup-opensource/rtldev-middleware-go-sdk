@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v3/responsetemplatemanager"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
 )
 
 type ResponseTranslator struct {
