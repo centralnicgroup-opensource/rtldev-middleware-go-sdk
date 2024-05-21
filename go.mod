@@ -1,11 +1,11 @@
 module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4
 
-go 1.22.3
+go 1.18
 
 require (
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/net v0.25.0
-	golang.org/x/text v0.15.0
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/net v0.15.0
+	golang.org/x/text v0.13.0
 )
 
 require (
