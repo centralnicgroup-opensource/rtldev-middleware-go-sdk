@@ -1,5 +1,5 @@
 {
-  "name": "rtldev-middleware-go-sdk",
+  "name": "go-sdk",
   "description": "GO/GOLANG SDK for the insanely fast HEXONET API",
   "version": "0.0.0-development",
   "private": true,

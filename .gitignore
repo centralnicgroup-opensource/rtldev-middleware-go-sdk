@@ -22,3 +22,4 @@ node_modules
 
 # go binary
 rtldev-middleware-go-sdk
+rtldev-middleware-dnscontrol
