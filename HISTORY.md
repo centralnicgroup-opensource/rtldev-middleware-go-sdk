@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.0...v4.0.1) (2024-05-21)
+
+
+### Bug Fixes
+
+* **package.json:** reviewed package name from rtldev-middleware-go-sdk to go-sdk for go packagist ([eb75e17](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/eb75e17ae7137bf0313f9bbf2772b560e0a77937))
+
 # [4.0.0](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.6...v4.0.0) (2024-05-21)
 
 
