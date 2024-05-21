@@ -18,6 +18,26 @@
 
 * **response class:** Brought our library to the next golang level and applied a huge restructuring to be future safe
 
+# [4.0.0](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.6...v4.0.0) (2024-05-21)
+
+
+### Bug Fixes
+
+* **idn translator:** replaced ([9fc05af](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/9fc05afb82b09d543e0d9eb5c8adfe55f0710683))
+* **lib structure:** avoid import cycle and reported linter issues ([8832b05](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/8832b05b477beb3adbaa6a85c10076cfc3dbe10c))
+* **response class:** merge with responsetemplate, add responsetranslator ([fef0a4b](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/fef0a4b5edc8181657e91e8c8c84401344a67b92))
+* **response/-templatemanager:** review & patch failing tests ([fad8f86](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/fad8f8689b7d21f4b7abc3f84c23a02f75e33984))
+
+
+### Performance Improvements
+
+* **idntranslator & ResponseTranslator class:** deprecated API IDN Conversion, integrated GOLang IDN library with tests, and ResponseTranslator tests ([d6b42ef](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/d6b42ef3e2f7a363911412708d8eeade667a7b41))
+
+
+### BREAKING CHANGES
+
+* **response class:** Brought our library to the next golang level and applied a huge restructuring to be future safe
+
 ## [3.5.6](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v3.5.5...v3.5.6) (2023-11-30)
 
 
