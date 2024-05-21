@@ -12,7 +12,7 @@
     "node": ">=20.6.1"
   },
   "homepage": "https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk",
-  "repository": "git@github.com:centralnicgroup-opensource/rtldev-middleware-go-sdk.git",
+  "repository": "github:centralnicgroup-opensource/rtldev-middleware-go-sdk.git",
   "bugs": "https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/issues",
   "maintainers": [
     {
