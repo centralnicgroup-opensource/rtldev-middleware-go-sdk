@@ -5,6 +5,13 @@
 
 * **deps:** Bumped deps version to make go-sdk compatible with dns-control ([cc323a0](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/cc323a0c231da347b5fa527f8521e611c898f551))
 
+## [4.0.3](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.2...v4.0.3) (2024-05-22)
+
+
+### Bug Fixes
+
+* **deps:** Bumped deps version to make go-sdk compatible with dns-control ([cc323a0](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/cc323a0c231da347b5fa527f8521e611c898f551))
+
 ## [4.0.2](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.1...v4.0.2) (2024-05-22)
 
 
