@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.1...v4.0.2) (2024-05-22)
+
+
+### Bug Fixes
+
+* **go.mod:** bumped go version 1.22.3 to 1.18 as dnscontrol supports 1.18 ([ed377c5](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/ed377c5375f64408f5914dddd62ae42534ddcd53))
+
 ## [4.0.1](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.0...v4.0.1) (2024-05-21)
 
 
