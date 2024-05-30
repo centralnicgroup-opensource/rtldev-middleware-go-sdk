@@ -9,9 +9,23 @@
             }
         ],
         [
-            "@semantic-release/exec",
+            "semantic-release-replace-plugin",
             {
-                "prepareCmd": "./updateVersion.sh ${nextRelease.version} ${options.branch}"
+                "replacements": [
+                    {
+                        "files": ["apiclient/apiclient.go"],
+                        "from": "\"\\d+\\.\\d+\\.\\d+\"",
+                        "to": "\"${nextRelease.version}\"",
+                        "countMatches": true
+                    },
+                    {
+                        "files": ["./**/*.go", "go.mod"],
+                        "from": "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v\\d+",
+                        "to": "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v${nextRelease.version.split('.')[0]}",
+                        "ignore": ["./node_modules/**", "./rtldev-middleware-dnscontrol/**"],
+                        "countMatches": true
+                    }
+                ]
             }
         ],
         [
