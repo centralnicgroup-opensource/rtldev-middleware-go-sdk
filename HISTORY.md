@@ -1,3 +1,10 @@
+## [4.0.6](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.5...v4.0.6) (2024-07-25)
+
+
+### Performance Improvements
+
+* **idntranslator.go:** extend transitional processing TLDs array with '.art' TLD ([27ad3d2](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/27ad3d2db2cdb4a398e29379344fe13f3adde813))
+
 ## [4.0.5](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.4...v4.0.5) (2024-07-08)
 
 
