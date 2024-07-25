@@ -103,7 +103,7 @@ func isTransitionalProcessing(keyword string, transitionalProcessing ...bool) bo
 		return transitionalProcessing[0]
 	}
 
-	transitionalTLDs := []string{"be", "ca", "de", "fr", "pm", "re", "swiss", "tf", "wf", "yt"}
+	transitionalTLDs := []string{"art", "be", "ca", "de", "fr", "pm", "re", "swiss", "tf", "wf", "yt"}
 	regex := `\.(` + strings.Join(transitionalTLDs, "|") + `)\.?`
 	re := regexp.MustCompile(regex)
 	return re.MatchString(strings.ToLower(keyword))
