@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/column"
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/record"
-	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
-	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetranslator"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/column"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/record"
+	rp "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/responseparser"
+	rt "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/responsetranslator"
 )
 
 // Response is a struct used to cover basic functionality to work with
@@ -31,7 +31,17 @@ type Response struct {
 	records     []record.Record
 }
 
-// NewResponse represents the constructor for struct Response.
+const defaultCode = 421
+
+// NewResponse creates a new Response object.
+// It takes a raw string, a command map, and optional placeholder maps as parameters.
+// The function replaces the "PASSWORD" value in the command map with "***" if it exists.
+// It then translates the raw string using the command and placeholder maps.
+// The function initializes a new Response object with the translated raw string, a hash value,
+// the command map, empty column keys and columns, a record index of 0, and an empty records slice.
+// If the hash value contains a "PROPERTY" key, the function adds columns and records to the Response object
+// based on the values in the "PROPERTY" map.
+// The function returns the newly created Response object.
 func NewResponse(raw string, cmd map[string]string, phs ...map[string]string) *Response {
 	ph := map[string]string{}
 	if len(phs) > 0 {
@@ -88,20 +98,53 @@ func NewResponse(raw string, cmd map[string]string, phs ...map[string]string) *R
 	return r
 }
 
-// GetCode method to return the API response code
+// GetCode returns the code associated with the response.
+// If the response does not have a code or if the code is not a valid integer,
+// it returns the default code.
+//
+// The code is retrieved from the response's hash, which is a map[string]interface{}.
+// The code value is expected to be stored under the key "CODE" as a string.
+// If the code value is not found or is not a string, the default code is returned.
+//
+// If an error occurs while converting the code string to an integer,
+// the default code is returned and the error is logged or handled appropriately.
+//
+// Returns:
+// - int: The code associated with the response.
 func (r *Response) GetCode() int {
 	h := r.GetHash()
-	c, err := strconv.Atoi(h["CODE"].(string))
-	if err == nil {
-		return c
+	if h == nil {
+		return defaultCode
 	}
-	return 421
+
+	codeStr, ok := h["CODE"].(string)
+	if !ok {
+		// Log or handle the error appropriately
+		return defaultCode
+	}
+
+	c, err := strconv.Atoi(codeStr)
+	if err != nil {
+		// Log or handle the error appropriately
+		return defaultCode
+	}
+	return c
 }
 
 // GetDescription method to return the API response description
 func (r *Response) GetDescription() string {
 	h := r.GetHash()
-	return h["DESCRIPTION"].(string)
+	if h == nil {
+		return ""
+	}
+
+	// Assuming there is a "DESCRIPTION" key in the hash
+	desc, ok := h["DESCRIPTION"].(string)
+	if !ok {
+		// Log or handle the error appropriately
+		return ""
+	}
+	return desc
 }
 
 // GetPlain method to return raw API response
@@ -158,12 +201,23 @@ func (r *Response) IsTmpError() bool {
 
 // IsPending method to check if current operation is returned as pending
 func (r *Response) IsPending() bool {
-	h := r.GetHash()
-	if val, ok := h["PENDING"]; ok {
-		if val.(string) == "1" {
-			return true
-		}
+	cmd := r.GetCommand()
+
+	// Check if the COMMAND is AddDomain (case-insensitive)
+	if command, ok := cmd["COMMAND"]; !ok || !strings.EqualFold(command, "AddDomain") {
+		return false
 	}
+
+	// Retrieve the STATUS column and check if its data equals REQUESTED (case-insensitive)
+	status := r.GetColumn("STATUS")
+	if status != nil {
+		statusData, err := status.GetDataByIndex(0)
+		if err != nil {
+			return false
+		}
+		return strings.EqualFold(statusData, "REQUESTED")
+	}
+
 	return false
 }
 
@@ -199,7 +253,7 @@ func (r *Response) GetColumnIndex(key string, index int) (string, error) {
 			return d, nil
 		}
 	}
-	return "", errors.New("Column Data Index does not exist")
+	return "", errors.New("column Data Index does not exist")
 }
 
 // GetColumnKeys method to get the list of column names
@@ -242,7 +296,7 @@ func (r *Response) GetCurrentPageNumber() (int, error) {
 	if ferr == nil && limit > 0 {
 		return int(math.Floor(float64(first)/float64(limit))) + 1, nil
 	}
-	return 0, errors.New("Could not find current page number")
+	return 0, errors.New("could not find current page number")
 }
 
 // GetCurrentRecord method to get record of current record index
@@ -263,14 +317,14 @@ func (r *Response) GetFirstRecordIndex() (int, error) {
 			if err2 == nil {
 				return idx, nil
 			}
-			return 0, errors.New("Could not find first record index")
+			return 0, errors.New("could not find first record index")
 		}
 	}
 	tlen := len(r.records)
 	if tlen > 1 {
 		return 0, nil
 	}
-	return 0, errors.New("Could not find first record index")
+	return 0, errors.New("could not find first record index")
 }
 
 // GetLastRecordIndex method to get last record index of the current list query
@@ -283,14 +337,14 @@ func (r *Response) GetLastRecordIndex() (int, error) {
 			if err2 == nil {
 				return idx, nil
 			}
-			return 0, errors.New("Could not find last record index")
+			return 0, errors.New("could not find last record index")
 		}
 	}
 	tlen := r.GetRecordsCount()
 	if tlen > 0 {
 		return (tlen - 1), nil
 	}
-	return 0, errors.New("Could not find last record index")
+	return 0, errors.New("could not find last record index")
 }
 
 // GetListHash method to get Response as List Hash including useful meta data for tables
@@ -322,7 +376,7 @@ func (r *Response) GetNextRecord() *record.Record {
 func (r *Response) GetNextPageNumber() (int, error) {
 	cp, err := r.GetCurrentPageNumber()
 	if err != nil {
-		return 0, errors.New("Could not find next page number")
+		return 0, errors.New("could not find next page number")
 	}
 	page := cp + 1
 	pages := r.GetNumberOfPages()
@@ -385,7 +439,7 @@ func (r *Response) GetPreviousPageNumber() (int, error) {
 	}
 	pp := cp - 1
 	if pp < 1 {
-		return 0, errors.New("Could not find previous page number")
+		return 0, errors.New("could not find previous page number")
 	}
 	return pp, nil
 }
@@ -472,14 +526,15 @@ func (r *Response) RewindRecordList() *Response {
 	return r
 }
 
-// hasColumn method to check if the given column exists in column list
+// hasColumn method to check if the given column exists in column list (case-insensitive)
 func (r *Response) hasColumn(key string) (int, bool) {
+	lowerKey := strings.ToLower(key)
 	for i, k := range r.columnkeys {
-		if k == key {
+		if strings.ToLower(k) == lowerKey {
 			return i, true
 		}
 	}
-	return 0, false
+	return -1, false
 }
 
 // hasCurrentRecord method to check if the record on current record index exists
