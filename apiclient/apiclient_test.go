@@ -2,13 +2,15 @@ package apiclient
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 
-	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/response"
+	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/response"
+	"github.com/stretchr/testify/assert"
 )
 
 var cl = NewAPIClient()
@@ -17,11 +19,11 @@ func TestMain(m *testing.M) {
 
 	rtm.AddTemplate(
 		"login200",
-		"[RESPONSE]\r\nPROPERTY[SESSION][0]=h8JLZZHdF2WgWWXlwbKWzEG3XrzoW4yshhvtqyg0LCYiX55QnhgYX9cB0W4mlpbx\r\nDESCRIPTION=Command completed successfully\r\nCODE=200\r\nQUEUETIME=0\r\nRUNTIME=0.169\r\nEOF\r\n",
+		"[RESPONSE]\r\nproperty[expiration date][0] = 2024-09-19 10:52:51\r\nproperty[sessionid][0] = bb7a884b09b9a674fb4a22211758ce87\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0.004\r\nruntime = 0.023\r\nEOF\r\n",
 	)
 	rtm.AddTemplate(
 		"listP0",
-		"[RESPONSE]\r\nPROPERTY[TOTAL][0]=2701\r\nPROPERTY[FIRST][0]=0\r\nPROPERTY[DOMAIN][0]=0-60motorcycletimes.com\r\nPROPERTY[DOMAIN][1]=0-be-s01-0.com\r\nPROPERTY[COUNT][0]=2\r\nPROPERTY[LAST][0]=1\r\nPROPERTY[LIMIT][0]=2\r\nDESCRIPTION=Command completed successfully\r\nCODE=200\r\nQUEUETIME=0\r\nRUNTIME=0.023\r\nEOF\r\n",
+		"[RESPONSE]\r\nproperty[total][0] = 4\r\nproperty[first][0] = 0\r\nproperty[domain][0] = cnic-ssl-test1.com\r\nproperty[domain][1] = cnic-ssl-test2.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 1\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
 	)
 	rtm.AddTemplate(
 		"OK",
@@ -31,7 +33,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetPOSTData1(t *testing.T) {
-	validate := "s_entity=54cd&s_command=AUTH%3Dgwrgwqg%25%26%5C44t3%2A%0ACOMMAND%3DModifyDomain"
+	validate := "s_command=AUTH%3Dgwrgwqg%25%26%5C44t3%2A%0ACOMMAND%3DModifyDomain"
 	enc := cl.GetPOSTData(map[string]string{
 		"COMMAND": "ModifyDomain",
 		"AUTH":    "gwrgwqg%&\\44t3*",
@@ -42,12 +44,13 @@ func TestGetPOSTData1(t *testing.T) {
 }
 
 func TestGetPOSTDataSecured(t *testing.T) {
-	validate := "s_entity=54cd&s_login=test.user&s_pw=***&s_command=COMMAND%3DCheckAuthentication%0APASSWORD%3D%2A%2A%2A%0ASUBUSER%3Dtest.user"
-	cl.SetCredentials("test.user", "test.passw0rd")
+	testUser := url.QueryEscape(os.Getenv("CNR_TEST_USER"))
+	validate := "s_login=" + testUser + "&s_pw=***&s_command=COMMAND%3DCheckAuthentication%0APASSWORD%3D%2A%2A%2A%0ASUBUSER%3D" + testUser
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	enc := cl.GetPOSTData(map[string]string{
 		"COMMAND":  "CheckAuthentication",
-		"SUBUSER":  "test.user",
-		"PASSWORD": "test.passw0rd",
+		"SUBUSER":  os.Getenv("CNR_TEST_USER"),
+		"PASSWORD": os.Getenv("CNR_TEST_PASSWORD"),
 	}, true)
 	if strings.Compare(enc, validate) != 0 {
 		t.Error(fmt.Printf("TestGetPOSTDataSecured: Expected encoding result not matching\n\n%s\n%s.", enc, validate))
@@ -64,7 +67,7 @@ func TestDisableDebugMode(_ *testing.T) {
 }
 
 func TestRequestFlattenCommand(t *testing.T) {
-	cl.SetCredentials("test.user", "test.passw0rd")
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	cl.UseOTESystem()
 	r := cl.Request(map[string]interface{}{
 		"COMMAND": "CheckDomains",
@@ -87,7 +90,7 @@ func TestRequestFlattenCommand(t *testing.T) {
 }
 
 func TestAutoIDNConvertCommand(t *testing.T) {
-	cl.SetCredentials("test.user", "test.passw0rd")
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	cl.UseOTESystem()
 	r := cl.Request(map[string]interface{}{
 		"COMMAND": "CheckDomains",
@@ -114,30 +117,9 @@ func TestAutoIDNConvertCommand(t *testing.T) {
 	cl.UseLIVESystem()
 }
 
-func TestGetSession1(t *testing.T) {
-	cl.Logout()
-	session, err := cl.GetSession()
-	if err == nil || session != "" {
-		t.Error("TestGetSession1: Expected no session, but found one.")
-	}
-}
-
-func TestGetSesssion2(t *testing.T) {
-	sessid := "testSessionID12345678"
-	cl.SetSession(sessid)
-	session, err := cl.GetSession()
-	if err != nil {
-		t.Error("TestGetSession2: Expected not to run into error.")
-	}
-	if strings.Compare(session, sessid) != 0 {
-		t.Error("TestGetSession2: Expected session id not matching.")
-	}
-	cl.SetSession("")
-}
-
 func TestGetURL(t *testing.T) {
 	url := cl.GetURL()
-	if strings.Compare(url, ISPAPI_CONNECTION_URL_LIVE) != 0 {
+	if strings.Compare(url, CNR_CONNECTION_URL_LIVE) != 0 {
 		t.Error("TestGetURL: Expected url not matching.")
 	}
 }
@@ -172,98 +154,11 @@ func TestSetUserAgentModules(t *testing.T) {
 }
 
 func TestSetURL(t *testing.T) {
-	url := cl.SetURL(ISPAPI_CONNECTION_URL_PROXY).GetURL()
-	if strings.Compare(ISPAPI_CONNECTION_URL_PROXY, url) != 0 {
+	url := cl.SetURL(CNR_CONNECTION_URL_PROXY).GetURL()
+	if strings.Compare(CNR_CONNECTION_URL_PROXY, url) != 0 {
 		t.Error("TestSetURL: Expected url not matching.")
 	}
-	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
-}
-
-func TestSetOTP1(t *testing.T) {
-	cl.SetOTP("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_otp=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSetOTP1: Expected post data string not matching.")
-	}
-}
-
-func TestSetOTP2(t *testing.T) {
-	cl.SetOTP("")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSetOTP2: Expected post data string not matching.")
-	}
-}
-
-func TestSetSession1(t *testing.T) {
-	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSession1: Expected post data string not matching.")
-	}
-}
-
-func TestSetSession2(t *testing.T) {
-	cl.SetRoleCredentials("myaccountid", "myrole", "mypassword")
-	cl.SetOTP("12345678")
-	cl.SetSession("12345678")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSession2: Expected post data string not matching.")
-	}
-}
-
-func TestSetSession3(t *testing.T) {
-	cl.SetSession("")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSession3: Expected post data string not matching.")
-	}
-}
-
-func TestSaveReuseSession(t *testing.T) {
-	sessionobj := map[string]interface{}{}
-	cl.SetSession("12345678")
-	cl.SaveSession(sessionobj)
-	cl2 := NewAPIClient()
-	cl2.ReuseSession(sessionobj)
-	tmp := cl2.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_session=12345678&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSaveReuseSession: Expected post data string not matching.")
-	}
-	cl.SetSession("")
-}
-
-func TestSetRemoteIPAddress1(t *testing.T) {
-	cl.SetRemoteIPAddress("10.10.10.10")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_remoteaddr=10.10.10.10&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSetRemoteIPAddress1: Expected post data string not matching.")
-	}
-}
-
-func TestSetRemoteIPAddress2(t *testing.T) {
-	cl.SetRemoteIPAddress("")
-	tmp := cl.GetPOSTData(map[string]string{
-		"COMMAND": "StatusAccount",
-	})
-	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
-		t.Error("TestSetRemoteIPAddress2: Expected post data string not matching.")
-	}
+	cl.SetURL(CNR_CONNECTION_URL_LIVE)
 }
 
 func TestSetCredentials1(t *testing.T) {
@@ -271,7 +166,7 @@ func TestSetCredentials1(t *testing.T) {
 	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
-	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
+	if strings.Compare(tmp, "s_login=myaccountid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
 		t.Error("TestSetCredentials1: Expected post data string not matching.")
 	}
 }
@@ -281,7 +176,7 @@ func TestSetCredentials2(t *testing.T) {
 	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
-	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
+	if strings.Compare(tmp, "s_command=COMMAND%3DStatusAccount") != 0 {
 		t.Error("TestSetCredentials2: Expected post data string not matching.")
 	}
 }
@@ -291,7 +186,7 @@ func TestSetRoleCredentials1(t *testing.T) {
 	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
-	if strings.Compare(tmp, "s_entity=54cd&s_login=myaccountid%21myroleid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
+	if strings.Compare(tmp, "s_login=myaccountid%3Amyroleid&s_pw=mypassword&s_command=COMMAND%3DStatusAccount") != 0 {
 		t.Error("TestSetRoleCredentials1: Expected post data string not matching.")
 	}
 }
@@ -301,7 +196,7 @@ func TestSetRoleCredentials2(t *testing.T) {
 	tmp := cl.GetPOSTData(map[string]string{
 		"COMMAND": "StatusAccount",
 	})
-	if strings.Compare(tmp, "s_entity=54cd&s_command=COMMAND%3DStatusAccount") != 0 {
+	if strings.Compare(tmp, "s_command=COMMAND%3DStatusAccount") != 0 {
 		t.Error("TestSetRoleCredentials2: Expected post data string not matching.")
 	}
 }
@@ -316,9 +211,9 @@ func TestSetProxy(t *testing.T) {
 }
 
 func TestSetReferer(t *testing.T) {
-	cl.SetReferer("https://www.hexonet.net/")
+	cl.SetReferer("https://www.centralnicreseller.com/")
 	val, err := cl.GetReferer()
-	if err != nil || val != "https://www.hexonet.net/" {
+	if err != nil || val != "https://www.centralnicreseller.com/" {
 		t.Error("TestSetReferer: referer not matching expected value")
 	}
 	cl.SetReferer("")
@@ -327,7 +222,7 @@ func TestSetReferer(t *testing.T) {
 func TestUseHighPerformanceConnectionSetup(t *testing.T) {
 	cl.UseHighPerformanceConnectionSetup()
 	val := cl.GetURL()
-	if val != ISPAPI_CONNECTION_URL_PROXY {
+	if val != CNR_CONNECTION_URL_PROXY {
 		t.Error("TestUseHighPerformanceConnectionSetup: couldn't activate high performance connection setup")
 	}
 }
@@ -335,34 +230,35 @@ func TestUseHighPerformanceConnectionSetup(t *testing.T) {
 func TestDefaultConnectionSetup(t *testing.T) {
 	cl.UseDefaultConnectionSetup()
 	val := cl.GetURL()
-	if val != ISPAPI_CONNECTION_URL_LIVE {
+	if val != CNR_CONNECTION_URL_LIVE {
 		t.Error("TestDefaultConnectionSetup: couldn't activate default connection setup")
 	}
 }
 
-func TestLogin1(t *testing.T) {
+func TestAccountStatus(t *testing.T) {
 	cl.UseOTESystem()
-	cl.SetCredentials("test.user", "test.passw0rd")
-	cl.SetRemoteIPAddress("1.2.3.4")
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	cl.EnableDebugMode()
-	r := cl.Login()
+	cmd := map[string]interface{}{}
+	cmd["COMMAND"] = "StatusAccount"
+	r := cl.Request(cmd)
+	if r.GetDescription() == "Authorization failed" {
+		t.Error("TestAccountStatus: Please make sure correct credentials are provided")
+	}
+
 	if !r.IsSuccess() {
-		t.Error("TestLogin1: Expected response to be a success case.")
+		t.Error("TestAccountStatus: Expected response to be a success case.")
 	}
 	rec := r.GetRecord(0)
 	if rec == nil {
-		t.Error("TestLogin1: Expected record not to be nil.")
-	}
-	d, err := rec.GetDataByKey("SESSION")
-	if err != nil || d == "" {
-		t.Error("TestLogin1: Expected session not to be empty.")
+		t.Error("TestAccountStatus: Expected record not to be nil.")
 	}
 }
 
-/*func TestLogin2(t *testing.T) {
+func TestLogin(t *testing.T) {
 	cl.UseOTESystem()
-	cl.SetRoleCredentials("test.user", "testrole", "test.passw0rd")
-	cl.SetRemoteIPAddress("1.2.3.4")
+	cl.EnableDebugMode()
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	r := cl.Login()
 	if !r.IsSuccess() {
 		t.Error("TestLogin2: Expected response to be a success case.")
@@ -371,69 +267,87 @@ func TestLogin1(t *testing.T) {
 	if rec == nil {
 		t.Error("TestLogin2: Expected record not to be nil.")
 	}
-	d, err := rec.GetDataByKey("SESSION")
+	d, err := rec.GetDataByKey("SESSIONID")
 	if err != nil || d == "" {
 		t.Error("TestLogin2: Expected session not to be empty.")
 	}
-}*/
+}
 
 func TestLogin3(t *testing.T) {
-	cl.SetCredentials("test.user", "WRONGPASSWORD")
-	cl.SetRemoteIPAddress("1.2.3.4")
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), "WRONGPASSWORD")
+	cl.EnableDebugMode()
 	r := cl.Login()
 	if !r.IsError() {
 		t.Error("TestLogin3: Expected response to be an error case.")
 	}
 }
 
-// validate against mocked API response [login failed; http timeout] // need mocking
-// validate against mocked API response [login succeeded; no session returned] // need mocking
+/**
+ * Make sure session is Cleaned up if password is provided after session is saved
+ */
+func TestLogin4(t *testing.T) {
+	sessionobj := map[string]interface{}{
+		"socketcfg": map[string]string{
+			"login":   "myaccount",
+			"session": "abc",
+		},
+	}
+	// Initialize the first APIClient instance
+	cl.ReuseSession(sessionobj).SetCredentials("myaccountid", "password").EnableDebugMode()
 
-func TestLoginExtended(t *testing.T) {
-	cl.UseOTESystem()
-	cl.SetCredentials("test.user", "test.passw0rd")
-	cl.SetRemoteIPAddress("1.2.3.4")
-	r := cl.LoginExtended(map[string]string{
-		"TIMEOUT": "60",
-	})
-	if !r.IsSuccess() {
-		t.Error("TestLoginExtended: Expected response to be a success case.")
+	// Prepare the command map
+	cmd := map[string]string{
+		"COMMAND": "StatusAccount",
 	}
-	rec := r.GetRecord(0)
-	if rec == nil {
-		t.Error("TestLoginExtended: Expected record not to be nil.")
-	}
-	d, err := rec.GetDataByKey("SESSION")
-	if err != nil && d == "" {
-		t.Error("TestLoginExtended: Expected session not to be empty.")
+
+	// Get the POST data from the second APIClient instance
+	tmp := cl.GetPOSTData(cmd)
+
+	// Validate the result
+	if strings.Compare(tmp, "s_login=myaccountid&s_pw=password&s_command=COMMAND%3DStatusAccount") != 0 {
+		t.Error("TestLogin4: Expected post data string not matching." + tmp)
 	}
 }
 
+// validate against mocked API response [login failed; http timeout] // need mocking
+// validate against mocked API response [login succeeded; no session returned] // need mocking
+
 func TestLogout1(t *testing.T) {
-	r := cl.Logout()
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
+	cl.UseOTESystem()
+	cl.EnableDebugMode()
+	r := cl.Login()
+	if !r.IsSuccess() {
+		t.Error("TestLogout1: Expected response to be a success case.")
+	}
+	r = cl.Logout()
 	if !r.IsSuccess() {
 		t.Error("TestLogout1: Expected response to be a success case.")
 	}
 }
 
-func TestLogout2(t *testing.T) {
-	tpl := R.NewResponse(
-		rtm.GetTemplate("login200"),
-		map[string]string{
-			"COMMAND": "StartSession",
-		},
-		nil,
-	)
-	rec := tpl.GetRecord(0)
-	sessid, err := rec.GetDataByKey("SESSION")
-	if err != nil {
-		t.Error("TestLogout2: Expected not run into error.")
+func TestSaveAndReuseSession(t *testing.T) {
+	// Initialize the first APIClient instance
+	sessionobj := make(map[string]interface{})
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
+	cl.Login()
+	cl.SaveSession(sessionobj)
+
+	// Initialize the second APIClient instance
+	cl2 := NewAPIClient()
+	cl2.ReuseSession(sessionobj)
+
+	// Prepare the command map
+	cmd := map[string]string{
+		"COMMAND": "StatusAccount",
 	}
-	cl.EnableDebugMode()
-	cl.SetSession(sessid)
-	r := cl.Logout()
-	if !r.IsError() {
-		t.Error("TestLogout2: Expected response to be an error case.")
+
+	// Get the POST data from the second APIClient instance
+	tmp := cl2.GetPOSTData(cmd)
+
+	// Validate the result
+	if !strings.Contains(tmp, "s_sessionid") {
+		t.Error("TestSaveReuseSession: Expected post data string to contain session ID.")
 	}
 }
 
@@ -446,16 +360,11 @@ func TestRequestNextResponsePage1(t *testing.T) { // nolint: gocyclo
 		map[string]string{
 			"COMMAND": "QueryDomainList",
 			"LIMIT":   "2",
-			"FIRST":   "0",
 		},
 	)
 	cl.UseOTESystem()
-	cl.SetRoleCredentials("test.user", "", "test.passw0rd")
-	cl.SetRemoteIPAddress("1.2.3.4")
-	nr := cl.Login()
-	if !nr.IsSuccess() {
-		t.Error("TestRequestNextResponsePage1: Expected login response to be a success case.")
-	}
+	cl.DisableDebugMode()
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	nr, err := cl.RequestNextResponsePage(r)
 	if err != nil {
 		t.Error(err)
@@ -514,7 +423,6 @@ func TestRequestNextResponsePage2(t *testing.T) {
 }
 
 func TestRequestNextResponsePage3(t *testing.T) { // nolint: gocyclo
-	cl.DisableDebugMode()
 	r := R.NewResponse(
 		rtm.GetTemplate("listP0"),
 		map[string]string{
@@ -574,21 +482,42 @@ func TestRequestAllResponsePages(t *testing.T) {
 }
 
 func TestSetUserView(t *testing.T) {
-	cl.SetUserView("hexotestman.com")
+	cl.SetUserView("julia")
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
 	cmd := map[string]interface{}{}
-	cmd["COMMAND"] = "GetUserIndex"
-	r := cl.Request(cmd)
-	if !r.IsSuccess() {
-		t.Error("TestSetUserView: Expected response to be a success case.")
-	}
-}
-
-func TestResetUserView(t *testing.T) {
-	cl.ResetUserView()
-	cmd := map[string]interface{}{}
-	cmd["COMMAND"] = "GetUserIndex"
+	cmd["COMMAND"] = "StatusAccount"
 	r := cl.Request(cmd)
 	if !r.IsSuccess() {
 		t.Error("TestResetUserView: Expected response to be a success case.")
 	}
+	rec := r.GetRecord(0)
+	if rec == nil {
+		t.Error("TestLogin2: Expected record not to be nil.")
+	}
+	d, err := rec.GetDataByKey("REGISTRAR")
+	if err != nil {
+		t.Errorf("Failed to get data by key 'REGISTRAR': %v", err)
+	}
+	assert.Equal(t, "julia", d)
+}
+
+func TestResetUserView(t *testing.T) {
+	cl.SetUserView("julia")
+	cl.ResetUserView()
+	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
+	cmd := map[string]interface{}{}
+	cmd["COMMAND"] = "StatusAccount"
+	r := cl.Request(cmd)
+	if !r.IsSuccess() {
+		t.Error("TestResetUserView: Expected response to be a success case.")
+	}
+	rec := r.GetRecord(0)
+	if rec == nil {
+		t.Error("TestLogin2: Expected record not to be nil.")
+	}
+	d, err := rec.GetDataByKey("REGISTRAR")
+	if err != nil {
+		t.Errorf("Failed to get data by key 'REGISTRAR': %v", err)
+	}
+	assert.NotEqual(t, "julia", d)
 }

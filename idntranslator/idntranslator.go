@@ -174,7 +174,11 @@ func decodeUnicodeEscapeSequences(unicodeString string) string {
 		}
 		// Combine the two code points into a single Unicode character
 		// This is necessary because certain characters are represented by pairs of code points
-		runeValue := utf16.DecodeRune(rune(uint16(r1)), rune(uint16(r2)))
+		// Ensure the values are within the valid range for uint16 before conversion
+		if r1 > 0xFFFF || r2 > 0xFFFF {
+			return match // Return the original string if values are out of range
+		}
+		runeValue := utf16.DecodeRune(rune(r1), rune(r2))
 		// If the resulting character is invalid, keep the original surrogate pair
 		if runeValue == utf8.RuneError {
 			return match
