@@ -28,6 +28,9 @@ func (c *Record) GetData() map[string]string {
 
 // GetDataByKey method to return the column data at the provided index
 func (c *Record) GetDataByKey(key string) (string, error) {
+	if c == nil {
+		return "", errors.New("record is nil")
+	}
 	if c.hasData(key) {
 		return c.data[key], nil
 	}

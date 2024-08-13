@@ -1,3 +1,46 @@
+// Package apiclient provides a client for communicating with the HEXONET backend API.
+//
+// This package allows two types of communication:
+// - Session-based communication: Used for building custom frontends and supports 2FA (Two-Factor Authentication).
+// - Sessionless communication: Used for simple command requests.
+//
+// The package includes the following features:
+// - Connection setup: The package supports three connection setups: high performance, default, and OT&E (demo system).
+// - API request: The package provides methods for making API requests and handling responses.
+// - Session management: The package allows for session login, logout, and session reuse.
+// - Debug mode: The package supports enabling and disabling debug mode for logging and output.
+// - Proxy configuration: The package allows for setting and retrieving proxy configurations for API communication.
+// - User agent customization: The package provides methods for customizing the user agent header.
+// - Command parameter handling: The package includes methods for flattening command parameters and automatically converting IDN (Internationalized Domain Name) values to punycode.
+// - Pagination support: The package includes methods for requesting next response pages and retrieving all response pages for a given query.
+//
+// For more information on the available commands, refer to the HEXONET API documentation: https://github.com/hexonet/hexonet-api-documentation/tree/master/API
+//
+// Example usage:
+//     // Create a new APIClient instance
+//     client := apiclient.NewAPIClient()
+//
+//     // Set credentials for API communication
+//     client.SetCredentials("username", "password")
+//
+//     // Make an API request
+//     response := client.Request(map[string]interface{}{
+//         "COMMAND": "StatusAccount",
+//     })
+//
+//     // Check if the request was successful
+//     if response.IsSuccess() {
+//         // Process the response data
+//         // ...
+//     } else {
+//         // Handle the error
+//         // ...
+//     }
+//
+//     // Close the API session
+//     client.Logout()
+//
+// Note: This package is based on the HEXONET API documentation and is subject to change. Please refer to the documentation for the most up-to-date information.
 // Copyright (c) 2018 Kai Schwarz (HEXONET GmbH). All rights reserved.
 //
 // Use of this source code is governed by the MIT
@@ -20,21 +63,21 @@ import (
 	"strings"
 	"time"
 
-	IDN "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/idntranslator"
-	LG "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/logger"
-	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/response"
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
-	SC "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/socketconfig"
+	IDN "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/idntranslator"
+	LG "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/logger"
+	R "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/response"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/responsetemplatemanager"
+	SC "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/socketconfig"
 )
 
-// ISPAPI_CONNECTION_URL_PROXY represents the url used for the high performance connection setup
-const ISPAPI_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi" //nolint
+// CNR_CONNECTION_URL_PROXY represents the url used for the high performance connection setup
+const CNR_CONNECTION_URL_PROXY = "http://127.0.0.1/api/call.cgi" //nolint
 
-// ISPAPI_CONNECTION_URL_LIVE represents the url used for the default connection setup
-const ISPAPI_CONNECTION_URL_LIVE = "https://api.ispapi.net/api/call.cgi" //nolint
+// CNR_CONNECTION_URL_LIVE represents the url used for the default connection setup
+const CNR_CONNECTION_URL_LIVE = "https://api.rrpproxy.net/api/call.cgi" //nolint
 
-// ISPAPI_CONNECTION_URL_OTE represents the url used for the OT&E (demo system) connection setup
-const ISPAPI_CONNECTION_URL_OTE = "https://api-ote.ispapi.net/api/call.cgi" //nolint
+// CNR_CONNECTION_URL_OTE represents the url used for the OT&E (demo system) connection setup
+const CNR_CONNECTION_URL_OTE = "https://api-ote.rrpproxy.net/api/call.cgi" //nolint
 
 var rtm = RTM.GetInstance()
 
@@ -59,6 +102,20 @@ type APIClient struct {
 	curlopts      map[string]string
 	ua            string
 	logger        LG.ILogger
+	subUser       string
+	roleSeparator string
+}
+
+// RequestOptions represents the options for an API request.
+type RequestOptions struct {
+	SetUserView bool // SetUserView indicates whether to set a data view to a given subuser.
+}
+
+// NewRequestOptions creates a new instance of RequestOptions with default values.
+func NewRequestOptions() *RequestOptions {
+	return &RequestOptions{
+		SetUserView: true,
+	}
 }
 
 // NewAPIClient represents the constructor for struct APIClient.
@@ -66,11 +123,12 @@ func NewAPIClient() *APIClient {
 	cl := &APIClient{
 		debugMode:     false,
 		socketTimeout: 300 * time.Second,
-		socketURL:     ISPAPI_CONNECTION_URL_LIVE,
+		socketURL:     CNR_CONNECTION_URL_LIVE,
 		socketConfig:  SC.NewSocketConfig(),
 		curlopts:      map[string]string{},
 		ua:            "",
 		logger:        nil,
+		roleSeparator: ":",
 	}
 	cl.UseLIVESystem()
 	cl.SetDefaultLogger()
@@ -105,7 +163,7 @@ func (cl *APIClient) GetProxy() (string, error) {
 	if exists {
 		return val, nil
 	}
-	return "", errors.New("No proxy configuration available")
+	return "", errors.New("no proxy configuration available")
 }
 
 // SetReferer method to set a value for HTTP Header `Referer` to use for API communication
@@ -124,7 +182,7 @@ func (cl *APIClient) GetReferer() (string, error) {
 	if exists {
 		return val, nil
 	}
-	return "", errors.New("No configuration available for HTTP Header `Referer`")
+	return "", errors.New("no configuration available for HTTP Header `Referer`")
 }
 
 // EnableDebugMode method to enable Debug Output to logger
@@ -136,6 +194,24 @@ func (cl *APIClient) EnableDebugMode() *APIClient {
 // DisableDebugMode method to disable Debug Output to logger
 func (cl *APIClient) DisableDebugMode() *APIClient {
 	cl.debugMode = false
+	return cl
+}
+
+// SetUserView method to set a data view to a given subuser
+func (cl *APIClient) SetUserView(uid string) *APIClient {
+	cl.subUser = uid
+	return cl
+}
+
+// ResetUserView method to reset data view back from subuser to user
+func (cl *APIClient) ResetUserView() *APIClient {
+	cl.subUser = ""
+	return cl
+}
+
+// UseHighPerformanceConnectionSetup to activate high performance conneciton setup
+func (cl *APIClient) UseHighPerformanceConnectionSetup() *APIClient {
+	cl.SetURL(CNR_CONNECTION_URL_PROXY)
 	return cl
 }
 
@@ -167,22 +243,16 @@ func (cl *APIClient) GetPOSTData(cmd map[string]string, secured ...bool) string 
 		re := regexp.MustCompile("PASSWORD=[^\n]+")
 		str = re.ReplaceAllString(str, "PASSWORD=***")
 	}
-	str = str[:len(str)-1] // Remove \n at end
+	if tmp.String() == "" {
+		return strings.TrimSuffix(data, "&")
+	}
+	str = strings.TrimSuffix(str, "\n")
 	return strings.Join([]string{
 		data,
 		url.QueryEscape("s_command"),
 		"=",
 		url.QueryEscape(str),
 	}, "")
-}
-
-// GetSession method to get the API Session that is currently set
-func (cl *APIClient) GetSession() (string, error) {
-	sessid := cl.socketConfig.GetSession()
-	if len(sessid) == 0 {
-		return "", errors.New("Could not find an active session")
-	}
-	return sessid, nil
 }
 
 // GetURL method to get the API connection url that is currently set
@@ -219,8 +289,8 @@ func (cl *APIClient) GetVersion() string {
 // Please save/update that map into user session
 func (cl *APIClient) SaveSession(sessionobj map[string]interface{}) *APIClient {
 	sessionobj["socketcfg"] = map[string]string{
-		"entity":  cl.socketConfig.GetSystemEntity(),
 		"session": cl.socketConfig.GetSession(),
+		"login":   cl.socketConfig.GetLogin(),
 	}
 	return cl
 }
@@ -228,9 +298,15 @@ func (cl *APIClient) SaveSession(sessionobj map[string]interface{}) *APIClient {
 // ReuseSession method to reuse given configuration out of a user session
 // to rebuild and reuse connection settings
 func (cl *APIClient) ReuseSession(sessionobj map[string]interface{}) *APIClient {
-	cfg := sessionobj["socketcfg"].(map[string]string)
-	cl.socketConfig.SetSystemEntity(cfg["entity"])
-	cl.SetSession(cfg["session"])
+	if sessionobj == nil || sessionobj["socketcfg"] == nil {
+		return cl
+	}
+	cfg, ok := sessionobj["socketcfg"].(map[string]string)
+	if !ok || cfg["login"] == "" || cfg["session"] == "" {
+		return cl
+	}
+	cl.SetCredentials(cfg["login"])
+	cl.socketConfig.SetSession(cfg["session"])
 	return cl
 }
 
@@ -240,85 +316,50 @@ func (cl *APIClient) SetURL(value string) *APIClient {
 	return cl
 }
 
-// SetOTP method to set one time password to be used for API communication
-func (cl *APIClient) SetOTP(value string) *APIClient {
-	cl.socketConfig.SetOTP(value)
-	return cl
-}
-
-// SetSession method to set an API session id to be used for API communication
-func (cl *APIClient) SetSession(value string) *APIClient {
-	cl.socketConfig.SetSession(value)
-	return cl
-}
-
-// SetRemoteIPAddress method to set an Remote IP Address to be used for API communication
-func (cl *APIClient) SetRemoteIPAddress(value string) *APIClient {
-	cl.socketConfig.SetRemoteAddress(value)
+// SetPersistent method sets the API connection to use a persistent session
+func (cl *APIClient) SetPersistent() *APIClient {
+	cl.socketConfig.SetPersistent()
 	return cl
 }
 
 // SetCredentials method to set Credentials to be used for API communication
-func (cl *APIClient) SetCredentials(uid string, pw string) *APIClient {
-	cl.socketConfig.SetLogin(uid)
-	cl.socketConfig.SetPassword(pw)
+func (cl *APIClient) SetCredentials(params ...string) *APIClient {
+	if len(params) > 0 {
+		cl.socketConfig.SetLogin(params[0])
+	}
+	if len(params) > 1 {
+		cl.socketConfig.SetPassword(params[1])
+	}
 	return cl
 }
 
 // SetRoleCredentials method to set Role User Credentials to be used for API communication
-func (cl *APIClient) SetRoleCredentials(uid string, role string, pw string) *APIClient {
-	if len(role) > 0 {
-		return cl.SetCredentials(uid+"!"+role, pw)
+func (cl *APIClient) SetRoleCredentials(params ...string) *APIClient {
+	if len(params) > 0 {
+		uid := params[0]
+		if len(params) > 1 && len(params[1]) > 0 {
+			role := params[1]
+			uid = uid + cl.roleSeparator + role
+		}
+		if len(params) > 2 {
+			pw := params[2]
+			return cl.SetCredentials(uid, pw)
+		}
+		return cl.SetCredentials(uid)
 	}
-	return cl.SetCredentials(uid, pw)
+	return cl
 }
 
 // Login method to perform API login to start session-based communication
 // 1st parameter: one time password
-func (cl *APIClient) Login(params ...string) *R.Response {
-	otp := ""
-	if len(params) > 0 {
-		otp = params[0]
-	}
-	cl.SetOTP(otp)
-	rr := cl.Request(map[string]interface{}{"COMMAND": "StartSession"})
+func (cl *APIClient) Login() *R.Response {
+	cl.SetPersistent()
+	rr := cl.Request(make(map[string]interface{}), &RequestOptions{SetUserView: false})
+	cl.socketConfig.SetSession("")
 	if rr.IsSuccess() {
-		col := rr.GetColumn("SESSION")
+		col := rr.GetColumn("SESSIONID")
 		if col != nil {
-			cl.SetSession(col.GetData()[0])
-		} else {
-			cl.SetSession("")
-		}
-	}
-	return rr
-}
-
-// LoginExtended method to perform API login to start session-based communication.
-// 1st parameter: map of additional command parameters
-// 2nd parameter: one time password
-func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
-	otp := ""
-	parameters := map[string]string{}
-	if len(params) == 2 {
-		otp = params[1].(string)
-	}
-	cl.SetOTP(otp)
-	if len(params) > 0 {
-		parameters = params[0].(map[string]string)
-	}
-	cmd := map[string]interface{}{
-		"COMMAND": "StartSession",
-	}
-	for k, v := range parameters {
-		cmd[k] = v
-	}
-	rr := cl.Request(cmd)
-	if rr.IsSuccess() {
-		col := rr.GetColumn("SESSION")
-		if col != nil {
-			cl.SetSession(col.GetData()[0])
-		} else {
-			cl.SetSession("")
+			cl.socketConfig.SetSession(col.GetData()[0])
 		}
 	}
 	return rr
@@ -327,16 +368,27 @@ func (cl *APIClient) LoginExtended(params ...interface{}) *R.Response {
 // Logout method to perform API logout to close API session in use
 func (cl *APIClient) Logout() *R.Response {
 	rr := cl.Request(map[string]interface{}{
-		"COMMAND": "EndSession",
-	})
+		"COMMAND": "StopSession",
+	}, &RequestOptions{SetUserView: false})
 	if rr.IsSuccess() {
-		cl.SetSession("")
+		cl.socketConfig.SetSession("")
 	}
 	return rr
 }
 
 // Request method to perform API request using the given command
-func (cl *APIClient) Request(cmd map[string]interface{}) *R.Response {
+func (cl *APIClient) Request(cmd map[string]interface{}, opts ...*RequestOptions) *R.Response {
+	// Use default RequestOptions if opts is not available
+	options := NewRequestOptions()
+	if len(opts) > 0 {
+		options = opts[0]
+	}
+
+	// Check if SetUserView option is enabled and subUser is set
+	if (options.SetUserView) && (len(cl.subUser) > 0) {
+		cmd["SUBUSER"] = cl.subUser
+	}
+
 	// flatten nested api command bulk parameters
 	newcmd := cl.flattenCommand(cmd)
 	// auto convert umlaut names to punycode
@@ -421,11 +473,11 @@ func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error
 		mycmd[key] = val
 	}
 	if _, ok := mycmd["LAST"]; ok {
-		return nil, errors.New("Parameter LAST in use. Please remove it to avoid issues in requestNextPage")
+		return nil, errors.New("parameter LAST in use. Please remove it to avoid issues in requestNextPage")
 	}
 	first := 0
 	if v, ok := mycmd["FIRST"]; ok {
-		first, _ = fmt.Sscan("%s", v)
+		first, _ = fmt.Sscan("%s", v) //nolint:errcheck
 	}
 	total := rr.GetRecordsTotalCount()
 	limit := rr.GetRecordsLimitation()
@@ -435,7 +487,7 @@ func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error
 		mycmd["LIMIT"] = fmt.Sprintf("%d", limit)
 		return cl.Request(mycmd), nil
 	}
-	return nil, errors.New("Could not find further existing pages")
+	return nil, errors.New("could not find further existing pages")
 }
 
 // RequestAllResponsePages method to request all pages/entries for the given query command
@@ -460,48 +512,31 @@ func (cl *APIClient) RequestAllResponsePages(cmd map[string]string) []R.Response
 	return responses
 }
 
-// SetUserView method to set a data view to a given subuser
-func (cl *APIClient) SetUserView(uid string) *APIClient {
-	cl.socketConfig.SetUser(uid)
-	return cl
-}
-
-// ResetUserView method to reset data view back from subuser to user
-func (cl *APIClient) ResetUserView() *APIClient {
-	cl.socketConfig.SetUser("")
-	return cl
-}
-
-// UseHighPerformanceConnectionSetup to activate high performance conneciton setup
-func (cl *APIClient) UseHighPerformanceConnectionSetup() *APIClient {
-	cl.SetURL(ISPAPI_CONNECTION_URL_PROXY)
-	return cl
-}
-
 // UseDefaultConnectionSetup to activate default conneciton setup (the default anyways)
 func (cl *APIClient) UseDefaultConnectionSetup() *APIClient {
-	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
+	cl.SetURL(CNR_CONNECTION_URL_LIVE)
 	return cl
 }
 
 // UseOTESystem method to set OT&E System for API communication
 func (cl *APIClient) UseOTESystem() *APIClient {
-	cl.SetURL(ISPAPI_CONNECTION_URL_OTE)
-	cl.socketConfig.SetSystemEntity("1234")
+	cl.SetURL(CNR_CONNECTION_URL_OTE)
 	return cl
 }
 
 // UseLIVESystem method to set LIVE System for API communication
 // Usage of LIVE System is active by default.
 func (cl *APIClient) UseLIVESystem() *APIClient {
-	cl.SetURL(ISPAPI_CONNECTION_URL_LIVE)
-	cl.socketConfig.SetSystemEntity("54cd")
+	cl.SetURL(CNR_CONNECTION_URL_LIVE)
 	return cl
 }
 
 // flattenCommand method to translate all command parameter names to uppercase
 func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]string {
 	newcmd := map[string]string{}
+	if len(cmd) == 0 {
+		return newcmd
+	}
 	for key, val := range cmd {
 		newKey := strings.ToUpper(key)
 		if reflect.TypeOf(val).Kind() == reflect.Slice {
@@ -523,6 +558,9 @@ func (cl *APIClient) flattenCommand(cmd map[string]interface{}) map[string]strin
 
 // autoIDNConvert method to translate all whitelisted parameter values to punycode, if necessary
 func (cl *APIClient) autoIDNConvert(cmd map[string]string) map[string]string {
+	if len(cmd) == 0 {
+		return cmd
+	}
 	// don't convert for convertidn command to avoid endless loop
 	pattern := regexp.MustCompile(`(?i)^CONVERTIDN$`)
 	mm := pattern.MatchString(cmd["COMMAND"])
