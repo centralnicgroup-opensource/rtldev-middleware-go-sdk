@@ -1,4 +1,4 @@
-module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4
+module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5
 
 go 1.22.1 // using this version to make it compatible with dnscontrol
 
