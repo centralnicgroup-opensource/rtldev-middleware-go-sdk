@@ -3,7 +3,7 @@ package idntranslator_test
 import (
 	"testing"
 
-	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/idntranslator"
+	"github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/idntranslator"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,6 +28,12 @@ func TestConvert(t *testing.T) {
 			domain: "münchen.de",
 			expected: []Row{
 				{IDN: "münchen.de", PUNYCODE: "xn--mnchen-3ya.de"},
+			},
+		},
+		{
+			domain: "faß.de",
+			expected: []Row{
+				{IDN: "faß.de", PUNYCODE: "fass.de"},
 			},
 		},
 		{

@@ -8,9 +8,7 @@
 package responseparser
 
 import (
-	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 )
 
@@ -50,46 +48,4 @@ func Parse(r string) map[string]interface{} {
 		hash["PROPERTY"] = properties
 	}
 	return hash
-}
-
-// Serialize method to serialize API response hash format back to string
-func Serialize(hash map[string]interface{}) string {
-	var plain strings.Builder
-	plain.WriteString("[RESPONSE]")
-	keys := []string{}
-	for k := range hash {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		if strings.Compare(k, "PROPERTY") == 0 {
-			p := hash[k].(map[string][]string)
-			keys2 := []string{}
-			for k2 := range p {
-				keys2 = append(keys2, k2)
-			}
-			sort.Strings(keys2)
-			for _, k2 := range keys2 {
-				v2 := p[k2]
-				for i, v3 := range v2 {
-					plain.WriteString("\r\nPROPERTY[")
-					plain.WriteString(k2)
-					plain.WriteString("][")
-					plain.WriteString(fmt.Sprintf("%d", i))
-					plain.WriteString("]=")
-					plain.WriteString(v3)
-				}
-			}
-		} else {
-			tmp := hash[k].(string)
-			if len(tmp) > 0 {
-				plain.WriteString("\r\n")
-				plain.WriteString(k)
-				plain.WriteString("=")
-				plain.WriteString(tmp)
-			}
-		}
-	}
-	plain.WriteString("\r\nEOF\r\n")
-	return plain.String()
 }
