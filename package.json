@@ -1,11 +1,11 @@
 {
   "name": "go-sdk",
-  "description": "GO/GOLANG SDK for the insanely fast HEXONET API",
+  "description": "GO/GOLANG SDK for the insanely fast CentralNic Reseller (fka RRPProxy) API",
   "version": "0.0.0-development",
   "private": true,
   "author": {
     "name": "Kai Schwarz",
-    "email": "kschwarz@hexonet.net"
+    "email": "kai.schwarz@centralnic.com"
   },
   "license": "MIT",
   "engines": {
@@ -17,16 +17,23 @@
   "maintainers": [
     {
       "name": "Kai Schwarz",
-      "email": "kschwarz@hexonet.net"
+      "email": "kai.schwarz@centralnic.com"
+    },
+    {
+      "name": "Asif Nawaz",
+      "email": "asif.nawaz@centralnic.com"
     }
   ],
+  "scripts": {
+    "test-demo": "go mod tidy && go run demo/demo.go"
+  },
   "keywords": [
-    "hexonet",
+    "cnr",
     "domain",
     "api",
     "connector",
-    "isp",
-    "ispapi",
+    "cnic",
+    "centralnic reseller",
     "ssl",
     "cert",
     "dns",

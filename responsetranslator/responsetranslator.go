@@ -10,30 +10,24 @@ import (
 	"regexp"
 	"strings"
 
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/responsetemplatemanager"
 )
 
 type ResponseTranslator struct {
 }
 
 var descriptionRegexMap = map[string]string{
-	// HX
-	"Authorization failed; Operation forbidden by ACL":                                                        "Authorization failed; Used Command `{COMMAND}` not white-listed by your Access Control List",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (clientTransferProhibited)/WRONG AUTH": "This Domain is locked and the given Authorization Code is wrong. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (clientTransferProhibited)":            "This Domain is locked. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (requested)":                           "Registration of this Domain Name has not yet completed. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (requestedcreate)":                     "Registration of this Domain Name has not yet completed. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (requesteddelete)":                     "Deletion of this Domain Name has been requested. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY STATUS (pendingdelete)":                       "Deletion of this Domain Name is pending. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY WRONG AUTH":                                   "The given Authorization Code is wrong. Initiating a Transfer is therefore impossible.",
-	"Request is not available; DOMAIN TRANSFER IS PROHIBITED BY AGE OF THE DOMAIN":                            "This Domain Name is within 60 days of initial registration. Initiating a Transfer is therefore impossible.",
-	"Attribute value is not unique; DOMAIN is already assigned to your account":                               "You cannot transfer a domain that is already on your account at the registrar's system.",
+	// HX | CNR?
+	"Authorization failed; Operation forbidden by ACL": "Authorization failed; Used Command `{COMMAND}` not white-listed by your Access Control List",
 	// CNR
+	"Domain status does not allow for operation":                                          "This Domain is locked. Initiating a Transfer is therefore impossible.",
+	"Authorization failed [Invalid authorization information]":                            "The given Authorization Code is wrong. Initiating a Transfer is therefore impossible.",
 	"Missing required attribute; premium domain name. please provide required parameters": "Confirm the Premium pricing by providing the necessary premium domain price data.",
 }
 
 var descriptionRegexMapSkipQuote = map[string]string{
-	// HX
+	// all cases goes here that need translation e.g.
+	// HX | CNR?
 	`Invalid attribute value syntax; resource record \[(.+)\]`:                  "Invalid Syntax for DNSZone Resource Record: $1",
 	`Missing required attribute; CLASS(?:=| \[MUST BE )PREMIUM_([\w\+]+)[\s\]]`: "Confirm the Premium pricing by providing the parameter CLASS with the value PREMIUM_$1.",
 	`Syntax error in Parameter DOMAIN \((.+)\)`:                                 "The Domain Name $1 is invalid.",
@@ -91,6 +85,7 @@ func Translate(raw string, cmd map[string]string, phs ...map[string]string) stri
 		// Escape the regex pattern and attempt to find a match
 		escapedRegex := regexp.QuoteMeta(regex)
 		data = FindMatch(escapedRegex, newraw, val, cmd, ph)
+
 		// If a match is found, exit the inner loop
 		if len(data) > 0 {
 			newraw = data
@@ -118,16 +113,18 @@ func FindMatch(regex string, newraw string, val string, cmd map[string]string, p
 	// NOTE: we match if the description starts with the given description
 	// it would also match if it is followed by additional text
 	ret := ""
-	qregex := regexp.MustCompile("(?i)description\\s*=\\s*" + regex + "([^\\r\\n]+)?")
+	qregex := regexp.MustCompile(`(?i)description[\s]*=[\s]*` + regex + `([^\r\n]+)?`)
 
 	if qregex.FindString(newraw) != "" {
-		// If "COMMAND" exists in cmd, replace "{COMMAND}" in val
-		myval, ok := cmd["COMMAND"]
-		if ok {
-			val = strings.ReplaceAll(val, "{COMMAND}", myval)
+		// Replace any placeholders dynamically in val using cmd and ph maps
+		for key, replaceVal := range cmd {
+			val = strings.ReplaceAll(val, "{"+key+"}", replaceVal)
+		}
+		for key, replaceVal := range ph {
+			val = strings.ReplaceAll(val, "{"+key+"}", replaceVal)
 		}
 
-		// If $newraw matches $qregex, replace with "description=" . $val
+		// If $newraw matches $qregex, replace with "description=" + val
 		tmp := qregex.ReplaceAllString(newraw, "description="+val)
 		if newraw != tmp {
 			ret = tmp
@@ -139,14 +136,31 @@ func FindMatch(regex string, newraw string, val string, cmd map[string]string, p
 		return ret
 	}
 
-	// Generic replacing of placeholder vars
+	// Compile the regular expression to match placeholders
 	vregex := regexp.MustCompile(`\{[^}]+\}`)
-	if vregex.FindString(ret) != "" {
-		for tkey, tval := range ph {
-			ret = strings.ReplaceAll(ret, "{"+tkey+"}", tval)
-		}
 
-		ret = vregex.ReplaceAllString(ret, "")
+	// Keep track of whether any replacements were made
+	replacementsMade := false
+
+	// Replace placeholders with corresponding values from the map
+	newret := ret
+	if ret == "" {
+		newret = newraw
+	}
+	newret = vregex.ReplaceAllStringFunc(newret, func(match string) string {
+		placeholder := match[1 : len(match)-1] // Extract the placeholder name
+
+		// Check if the placeholder exists in the map
+		if value, exists := ph[placeholder]; exists {
+			replacementsMade = true
+			return value
+		}
+		return "" // Remove placeholder if not found
+	})
+
+	// Return an newret if replacements were made
+	if replacementsMade {
+		return newret
 	}
 
 	return ret

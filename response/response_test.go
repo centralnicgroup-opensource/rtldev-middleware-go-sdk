@@ -8,8 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	RP "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responseparser"
-	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v4/responsetemplatemanager"
+	RTM "github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5/responsetemplatemanager"
 )
 
 var rtm = RTM.GetInstance()
@@ -17,11 +16,15 @@ var rtm = RTM.GetInstance()
 func TestMain(m *testing.M) {
 	rtm.AddTemplate(
 		"login200",
-		"[RESPONSE]\r\nPROPERTY[SESSION][0]=h8JLZZHdF2WgWWXlwbKWzEG3XrzoW4yshhvtqyg0LCYiX55QnhgYX9cB0W4mlpbx\r\nDESCRIPTION=Command completed successfully\r\nCODE=200\r\nQUEUETIME=0\r\nRUNTIME=0.169\r\nEOF\r\n",
+		"[RESPONSE]\r\nproperty[expiration date][0] = 2024-09-19 10:52:51\r\nproperty[sessionid][0] = bb7a884b09b9a674fb4a22211758ce87\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0.004\r\nruntime = 0.023\r\nEOF\r\n",
 	)
 	rtm.AddTemplate(
 		"listP0",
-		"[RESPONSE]\r\nPROPERTY[TOTAL][0]=2701\r\nPROPERTY[FIRST][0]=0\r\nPROPERTY[DOMAIN][0]=0-60motorcycletimes.com\r\nPROPERTY[DOMAIN][1]=0-be-s01-0.com\r\nPROPERTY[COUNT][0]=2\r\nPROPERTY[LAST][0]=1\r\nPROPERTY[LIMIT][0]=2\r\nDESCRIPTION=Command completed successfully\r\nCODE=200\r\nQUEUETIME=0\r\nRUNTIME=0.023\r\nEOF\r\n",
+		"[RESPONSE]\r\nproperty[total][0] = 4\r\nproperty[first][0] = 0\r\nproperty[domain][0] = cnic-ssl-test1.com\r\nproperty[domain][1] = cnic-ssl-test2.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 1\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
+	rtm.AddTemplate(
+		"pendingRegistration",
+		"[RESPONSE]\r\ncode = 200\r\ndescription = Command completed successfully\r\nruntime = 0.44\r\nqueuetime = 0\r\n\r\nproperty[status][0] = REQUESTED\r\nproperty[updated date][0] = 2023-05-22 12:14:31.0\r\nproperty[zone][0] = se\r\nEOF\r\n",
 	)
 	rtm.AddTemplate(
 		"OK",
@@ -96,23 +99,6 @@ func TestGetFirstRecordIndex1(t *testing.T) {
 	}
 }
 
-func TestGetFirstRecordIndex2(t *testing.T) {
-	h := RP.Parse(rtm.GetTemplate("OK"))
-	h["PROPERTY"] = map[string][]string{
-		"DOMAIN": {"mydomain1.com", "mydomain2.com"},
-	}
-	serialized := RP.Serialize(h)
-	r := NewResponse(serialized, map[string]string{"COMMAND": "QueryDomainList"})
-	v, err := r.GetFirstRecordIndex()
-	fmt.Println(serialized)
-	if err != nil {
-		t.Error("TestGetFirstRecordIndex2: Expected not to run into error.")
-	}
-	if v != 0 {
-		t.Error(fmt.Printf("TestGetFirstRecordIndex2: Expected index value '%d' to be '0'.", v))
-	}
-}
-
 func TestGetColumms(t *testing.T) {
 	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
@@ -129,7 +115,7 @@ func TestGetColumnIndex1(t *testing.T) {
 	if err != nil {
 		t.Error("Expected not to run into error.")
 	}
-	if strings.Compare(data, "0-60motorcycletimes.com") != 0 {
+	if strings.Compare(data, "cnic-ssl-test1.com") != 0 {
 		t.Error("Expected domain name not matching.")
 	}
 }
@@ -171,11 +157,11 @@ func TestGetCurrentRecord(t *testing.T) {
 	d := rec.GetData()
 	expected := map[string]string{
 		"COUNT":  "2",
-		"DOMAIN": "0-60motorcycletimes.com",
+		"DOMAIN": "cnic-ssl-test1.com",
 		"FIRST":  "0",
 		"LAST":   "1",
 		"LIMIT":  "2",
-		"TOTAL":  "2701",
+		"TOTAL":  "4",
 	}
 	eq := reflect.DeepEqual(d, expected)
 	if !eq {
@@ -221,7 +207,7 @@ func TestGetNextRecord(t *testing.T) {
 	plain := rtm.GetTemplate("listP0")
 	r := NewResponse(plain, map[string]string{"COMMAND": "QueryDomainList"})
 	rec := r.GetNextRecord()
-	expected := map[string]string{"DOMAIN": "0-be-s01-0.com"}
+	expected := map[string]string{"DOMAIN": "cnic-ssl-test2.com"}
 	if !reflect.DeepEqual(rec.GetData(), expected) {
 		t.Error("Expected record data not matching.")
 	}
@@ -260,11 +246,11 @@ func TestGetPreviousRecord(t *testing.T) {
 	d := r.GetPreviousRecord().GetData()
 	expected := map[string]string{
 		"COUNT":  "2",
-		"DOMAIN": "0-60motorcycletimes.com",
+		"DOMAIN": "cnic-ssl-test1.com",
 		"FIRST":  "0",
 		"LAST":   "1",
 		"LIMIT":  "2",
-		"TOTAL":  "2701",
+		"TOTAL":  "4",
 	}
 	if !reflect.DeepEqual(d, expected) {
 		t.Error("Expected previous record data not matching.")
@@ -313,21 +299,6 @@ func TestGetLastRecordIndex1(t *testing.T) {
 	_, err := r.GetLastRecordIndex()
 	if err == nil {
 		t.Error("Expected to run into error.")
-	}
-}
-
-func TestGetLastRecordIndex2(t *testing.T) {
-	h := RP.Parse(rtm.GetTemplate("OK"))
-	h["PROPERTY"] = map[string][]string{
-		"DOMAIN": {"mydomain1.com", "mydomain2.com"},
-	}
-	r := NewResponse(RP.Serialize(h), map[string]string{"COMMAND": "QueryDomainList"})
-	lr, err := r.GetLastRecordIndex()
-	if err != nil {
-		t.Error("Expected not to run into error.")
-	}
-	if lr != 1 {
-		t.Error(fmt.Printf("Expected last record index '%d' to be '1'.", lr))
 	}
 }
 
@@ -397,5 +368,14 @@ func TestRewindRecordList(t *testing.T) {
 	pr = r.RewindRecordList().GetPreviousRecord()
 	if pr != nil {
 		t.Error("Expected previous record to be nil.")
+	}
+}
+
+func TestIsPending(t *testing.T) {
+	plain := rtm.GetTemplate("pendingRegistration")
+	r := NewResponse(plain, map[string]string{"COMMAND": "AddDomain"})
+	fmt.Print(r.IsPending())
+	if got := r.IsPending(); got != true {
+		t.Errorf("isPending() = %v, want true", got)
 	}
 }

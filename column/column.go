@@ -32,6 +32,9 @@ func (c *Column) GetKey() string {
 
 // GetData method to return the column data
 func (c *Column) GetData() []string {
+	if c == nil {
+		return nil
+	}
 	return c.data
 }
 
@@ -40,7 +43,7 @@ func (c *Column) GetDataByIndex(idx int) (string, error) {
 	if c.hasDataIndex(idx) {
 		return c.data[idx], nil
 	}
-	return "", errors.New("Index not found")
+	return "", errors.New("index not found")
 }
 
 // hasDataIndex method to check if the given data index exists
