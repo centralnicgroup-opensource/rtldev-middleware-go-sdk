@@ -1,3 +1,16 @@
+# [5.0.0](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.7...v5.0.0) (2024-11-11)
+
+
+### Features
+
+* **centralnic-reseller-go-sdk:** Introducing CentralNic Reseller Go-SDK API Connector ([5762fe3](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/5762fe33aa25ba8094803667b388582e68b45d15))
+
+
+### BREAKING CHANGES
+
+* **centralnic-reseller-go-sdk:** This release deprecates the Hexonet Go SDK and introduces the CentralNic Reseller Go SDK.
+- Note: To continue using the Hexonet SDK, please install version 4.0.7 or earlier.
+
 ## [4.0.7](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v4.0.6...v4.0.7) (2024-08-07)
 
 
