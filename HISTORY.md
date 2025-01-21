@@ -1,3 +1,10 @@
+## [5.0.6](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.5...v5.0.6) (2025-01-21)
+
+
+### Performance Improvements
+
+* **apiclient:** add connection keep-alive http header, reuse http client ([d348bcb](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/d348bcb553dc086c75a3ea719e8c223a4451eb53))
+
 ## [5.0.5](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.4...v5.0.5) (2025-01-07)
 
 
