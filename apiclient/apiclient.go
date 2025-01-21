@@ -104,6 +104,7 @@ type APIClient struct {
 	logger        LG.ILogger
 	subUser       string
 	roleSeparator string
+	client        *http.Client
 }
 
 // RequestOptions represents the options for an API request.
@@ -129,6 +130,7 @@ func NewAPIClient() *APIClient {
 		ua:            "",
 		logger:        nil,
 		roleSeparator: ":",
+		client:		   &http.Client{},
 	}
 	cl.UseLIVESystem()
 	cl.SetDefaultLogger()
@@ -405,12 +407,11 @@ func (cl *APIClient) Request(cmd map[string]interface{}, opts ...*RequestOptions
 	secured := cl.GetPOSTData(newcmd, true)
 
 	val, err := cl.GetProxy()
-	client := &http.Client{
-		Timeout: cl.socketTimeout,
-	}
+	cl.client.Timeout = cl.socketTimeout
+
 	if err == nil {
 		if proxyconfigurl, parsingerr := url.Parse(val); parsingerr == nil {
-			client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyconfigurl)}
+			cl.client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyconfigurl)}
 		} else if cl.debugMode {
 			fmt.Println("Not able to parse configured Proxy URL: " + val)
 		}
@@ -424,14 +425,15 @@ func (cl *APIClient) Request(cmd map[string]interface{}, opts ...*RequestOptions
 		}
 		return r
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Expect", "")
-	req.Header.Add("User-Agent", cl.GetUserAgent())
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Expect", "")
+	req.Header.Set("User-Agent", cl.GetUserAgent())
 	val, err = cl.GetReferer()
 	if err != nil {
 		req.Header.Add("Referer", val)
 	}
-	resp, err2 := client.Do(req)
+	resp, err2 := cl.client.Do(req)
 	if err2 != nil {
 		tpl := rtm.GetTemplate("httperror")
 		r := R.NewResponse(tpl, newcmd, cfg)
