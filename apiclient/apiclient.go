@@ -130,7 +130,7 @@ func NewAPIClient() *APIClient {
 		ua:            "",
 		logger:        nil,
 		roleSeparator: ":",
-		client:		   &http.Client{},
+		client:        &http.Client{},
 	}
 	cl.UseLIVESystem()
 	cl.SetDefaultLogger()
