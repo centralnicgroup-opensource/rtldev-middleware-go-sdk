@@ -1,3 +1,10 @@
+## [5.0.7](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.6...v5.0.7) (2025-02-05)
+
+
+### Bug Fixes
+
+* **deps:** bump golang.org/x/text from 0.21.0 to 0.22.0 ([22a565a](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/22a565abbafd5f05f4aa44471605bd4b5b18fd04))
+
 ## [5.0.6](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.5...v5.0.6) (2025-01-21)
 
 
