@@ -1,10 +1,12 @@
 module github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5
 
-go 1.22.1 // using this version to make it compatible with dnscontrol
+go 1.23.0 // using this version to make it compatible with dnscontrol
+
+toolchain go1.23.7
 
 require (
 	github.com/stretchr/testify v1.10.0 // using this version to make it compatible with dnscontrol
-	golang.org/x/net v0.35.0 // using this version to make it compatible with dnscontrol
+	golang.org/x/net v0.36.0 // using this version to make it compatible with dnscontrol
 	golang.org/x/text v0.22.0 // using this version to make it compatible with dnscontrol
 )
 
