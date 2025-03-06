@@ -7,7 +7,7 @@ toolchain go1.23.7
 require (
 	github.com/stretchr/testify v1.10.0 // using this version to make it compatible with dnscontrol
 	golang.org/x/net v0.36.0 // using this version to make it compatible with dnscontrol
-	golang.org/x/text v0.22.0 // using this version to make it compatible with dnscontrol
+	golang.org/x/text v0.23.0 // using this version to make it compatible with dnscontrol
 )
 
 require (
