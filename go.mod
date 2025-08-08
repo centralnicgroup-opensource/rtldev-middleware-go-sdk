@@ -4,8 +4,8 @@ go 1.23.0 // using this version to make it compatible with dnscontrol
 
 require (
 	github.com/stretchr/testify v1.10.0 // using this version to make it compatible with dnscontrol
-	golang.org/x/net v0.42.0 // using this version to make it compatible with dnscontrol
-	golang.org/x/text v0.27.0 // using this version to make it compatible with dnscontrol
+	golang.org/x/net v0.43.0 // using this version to make it compatible with dnscontrol
+	golang.org/x/text v0.28.0 // using this version to make it compatible with dnscontrol
 )
 
 require (
