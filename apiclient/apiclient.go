@@ -284,7 +284,7 @@ func (cl *APIClient) GetUserAgent() string {
 
 // GetVersion method to get current module version
 func (cl *APIClient) GetVersion() string {
-	return "5.0.15"
+	return "5.0.16"
 }
 
 // SaveSession method to apply data to a session for later reuse
