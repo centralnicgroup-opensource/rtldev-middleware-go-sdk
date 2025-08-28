@@ -1,3 +1,10 @@
+## [5.0.18](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.17...v5.0.18) (2025-08-28)
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/stretchr/testify from 1.11.0 to 1.11.1 ([8b85d07](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/8b85d07b7d34912ee22eddb0fd666e4d12baa9aa))
+
 ## [5.0.17](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.16...v5.0.17) (2025-08-25)
 
 
