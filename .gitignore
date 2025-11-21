@@ -17,8 +17,10 @@
 coverage.out
 coverage.html
 
-# npm
+# npm / pnpm
 node_modules
+.pnpm-store
+package-lock.json
 
 # go binary
 rtldev-middleware-go-sdk
