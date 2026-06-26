@@ -1,3 +1,14 @@
+## [5.0.19](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.18...v5.0.19) (2026-06-26)
+
+
+### Bug Fixes
+
+* **apiclient:** stabilize request pagination tests ([85248e1](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/85248e16be3c69a0dc84d4713005fcdbaab7aa43))
+* **deps:** bump glob from 10.4.5 to 10.5.0 ([4f32f0b](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/4f32f0b6e8a383c2dbc63f151a3187bfc3e093d2))
+* **deps:** bump golang.org/x/net from 0.43.0 to 0.46.0 ([34c6970](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/34c6970f0addd52953ecdd90de25d60897e990b0))
+* **deps:** bump golang.org/x/net from 0.46.0 to 0.47.0 ([1ff13a2](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/1ff13a2a0b8f91c37853fd3589ebfb0ccbdcf942))
+* **deps:** bump lodash-es from 4.17.21 to 4.17.23 ([1b8de28](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/1b8de282c23711afcaa9e19bf4f737cc09288d79))
+
 ## [5.0.18](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.17...v5.0.18) (2025-08-28)
 
 
