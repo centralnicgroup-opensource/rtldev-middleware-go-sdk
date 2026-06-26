@@ -479,10 +479,17 @@ func (cl *APIClient) RequestNextResponsePage(rr *R.Response) (*R.Response, error
 	}
 	first := 0
 	if v, ok := mycmd["FIRST"]; ok {
-		first, _ = fmt.Sscan("%s", v) //nolint:errcheck
+		parsedFirst, err := strconv.Atoi(fmt.Sprint(v))
+		if err != nil {
+			return nil, errors.New("could not parse FIRST parameter")
+		}
+		first = parsedFirst
 	}
 	total := rr.GetRecordsTotalCount()
 	limit := rr.GetRecordsLimitation()
+	if limit <= 0 {
+		return nil, errors.New("could not request next page: LIMIT must be greater than zero")
+	}
 	first += limit
 	if first < total {
 		mycmd["FIRST"] = fmt.Sprintf("%d", first)

@@ -2,6 +2,9 @@ package apiclient
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"runtime"
@@ -16,7 +19,6 @@ import (
 var cl = NewAPIClient()
 
 func TestMain(m *testing.M) {
-
 	rtm.AddTemplate(
 		"login200",
 		"[RESPONSE]\r\nproperty[expiration date][0] = 2024-09-19 10:52:51\r\nproperty[sessionid][0] = bb7a884b09b9a674fb4a22211758ce87\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0.004\r\nruntime = 0.023\r\nEOF\r\n",
@@ -32,6 +34,53 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func newCommandCaptureServer(t *testing.T, responseTemplates ...string) (*httptest.Server, <-chan string) {
+	t.Helper()
+	if len(responseTemplates) == 0 {
+		t.Fatal("Expected at least one response template.")
+	}
+	commands := make(chan string, len(responseTemplates))
+	responses := make(chan string, len(responseTemplates))
+	for _, responseTemplate := range responseTemplates {
+		responses <- responseTemplate
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			t.Errorf("Expected request body to be readable: %v", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		postData, err := url.ParseQuery(string(body))
+		if err != nil {
+			t.Errorf("Expected request body to parse: %v", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		commands <- postData.Get("s_command")
+		responseTemplate := responseTemplates[len(responseTemplates)-1]
+		select {
+		case responseTemplate = <-responses:
+		default:
+		}
+		if _, err := writer.Write([]byte(responseTemplate)); err != nil {
+			t.Errorf("Expected response body to be writable: %v", err)
+		}
+	}))
+	return server, commands
+}
+
+func readCapturedCommand(t *testing.T, commands <-chan string) string {
+	t.Helper()
+	select {
+	case command := <-commands:
+		return command
+	default:
+		t.Fatal("Expected API request to be sent.")
+		return ""
+	}
+}
+
 func TestGetPOSTData1(t *testing.T) {
 	validate := "s_command=AUTH%3Dgwrgwqg%25%26%5C44t3%2A%0ACOMMAND%3DModifyDomain"
 	enc := cl.GetPOSTData(map[string]string{
@@ -44,13 +93,13 @@ func TestGetPOSTData1(t *testing.T) {
 }
 
 func TestGetPOSTDataSecured(t *testing.T) {
-	testUser := url.QueryEscape(os.Getenv("CNR_TEST_USER"))
+	testUser := url.QueryEscape("myaccountid")
 	validate := "s_login=" + testUser + "&s_pw=***&s_command=COMMAND%3DCheckAuthentication%0APASSWORD%3D%2A%2A%2A%0ASUBUSER%3D" + testUser
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
+	cl.SetCredentials("myaccountid", "mypassword")
 	enc := cl.GetPOSTData(map[string]string{
 		"COMMAND":  "CheckAuthentication",
-		"SUBUSER":  os.Getenv("CNR_TEST_USER"),
-		"PASSWORD": os.Getenv("CNR_TEST_PASSWORD"),
+		"SUBUSER":  "myaccountid",
+		"PASSWORD": "mypassword",
 	}, true)
 	if strings.Compare(enc, validate) != 0 {
 		t.Error(fmt.Printf("TestGetPOSTDataSecured: Expected encoding result not matching\n\n%s\n%s.", enc, validate))
@@ -67,12 +116,15 @@ func TestDisableDebugMode(_ *testing.T) {
 }
 
 func TestRequestFlattenCommand(t *testing.T) {
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cl.UseOTESystem()
-	r := cl.Request(map[string]interface{}{
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("OK"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	r := client.Request(map[string]interface{}{
 		"COMMAND": "CheckDomains",
 		"DOMAiN":  []string{"example.com", "example.net"},
 	})
+	readCapturedCommand(t, commands)
 	if !r.IsSuccess() || r.GetCode() != 200 || r.GetDescription() != "Command completed successfully" {
 		t.Error("TestRequestFlattenCommand: Expected response to succeed.")
 	}
@@ -90,12 +142,15 @@ func TestRequestFlattenCommand(t *testing.T) {
 }
 
 func TestAutoIDNConvertCommand(t *testing.T) {
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cl.UseOTESystem()
-	r := cl.Request(map[string]interface{}{
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("OK"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	r := client.Request(map[string]interface{}{
 		"COMMAND": "CheckDomains",
 		"DOMAIN":  []string{"example.com", "dömäin.example", "example.net"},
 	})
+	readCapturedCommand(t, commands)
 	if !r.IsSuccess() || r.GetCode() != 200 || r.GetDescription() != "Command completed successfully" {
 		t.Error("TestRequestFlattenCommand: Expected response to succeed." + strconv.Itoa(r.GetCode()) + r.GetDescription())
 	}
@@ -112,9 +167,6 @@ func TestAutoIDNConvertCommand(t *testing.T) {
 	if val1 != "example.com" || val2 != "xn--dmin-moa0i.example" || val3 != "example.net" {
 		t.Error("TestRequestFlattenCommand: DOMAIN parameter flattening not working (vals).")
 	}
-	// reset to defaults for following tests
-	cl.SetCredentials("", "")
-	cl.UseLIVESystem()
 }
 
 func TestGetURL(t *testing.T) {
@@ -236,34 +288,45 @@ func TestDefaultConnectionSetup(t *testing.T) {
 }
 
 func TestAccountStatus(t *testing.T) {
-	cl.UseOTESystem()
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cl.EnableDebugMode()
-	cmd := map[string]interface{}{}
-	cmd["COMMAND"] = "StatusAccount"
-	r := cl.Request(cmd)
-	if r.GetDescription() == "Authorization failed" {
-		t.Error("TestAccountStatus: Please make sure correct credentials are provided")
+	rtm.AddTemplate(
+		"statusAccount200",
+		"[RESPONSE]\r\nproperty[registrar][0] = qmtest\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("statusAccount200"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.EnableDebugMode()
+	response := client.Request(map[string]interface{}{
+		"COMMAND": "StatusAccount",
+	})
+	command := readCapturedCommand(t, commands)
+	if !strings.Contains(command, "COMMAND=StatusAccount") {
+		t.Errorf("TestAccountStatus: Expected StatusAccount command, got %q", command)
 	}
 
-	if !r.IsSuccess() {
+	if !response.IsSuccess() {
 		t.Error("TestAccountStatus: Expected response to be a success case.")
 	}
-	rec := r.GetRecord(0)
+	rec := response.GetRecord(0)
 	if rec == nil {
 		t.Error("TestAccountStatus: Expected record not to be nil.")
 	}
 }
 
 func TestLogin(t *testing.T) {
-	cl.UseOTESystem()
-	cl.EnableDebugMode()
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	r := cl.Login()
-	if !r.IsSuccess() {
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("login200"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.EnableDebugMode()
+	client.SetCredentials("myaccountid", "mypassword")
+	response := client.Login()
+	readCapturedCommand(t, commands)
+	if !response.IsSuccess() {
 		t.Error("TestLogin2: Expected response to be a success case.")
 	}
-	rec := r.GetRecord(0)
+	rec := response.GetRecord(0)
 	if rec == nil {
 		t.Error("TestLogin2: Expected record not to be nil.")
 	}
@@ -271,15 +334,22 @@ func TestLogin(t *testing.T) {
 	if err != nil || d == "" {
 		t.Error("TestLogin2: Expected session not to be empty.")
 	}
+	if client.socketConfig.GetSession() == "" {
+		t.Error("TestLogin2: Expected client session not to be empty.")
+	}
 }
 
 func TestLogin3(t *testing.T) {
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), "WRONGPASSWORD")
-	cl.EnableDebugMode()
-	r := cl.Login()
-	if !r.IsError() {
+	server, commands := newCommandCaptureServer(t, rtm.GenerateTemplate("530", "Authentication failed"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.SetCredentials("myaccountid", "WRONGPASSWORD")
+	response := client.Login()
+	if !response.IsError() {
 		t.Error("TestLogin3: Expected response to be an error case.")
 	}
+	readCapturedCommand(t, commands)
 }
 
 /**
@@ -313,25 +383,41 @@ func TestLogin4(t *testing.T) {
 // validate against mocked API response [login succeeded; no session returned] // need mocking
 
 func TestLogout1(t *testing.T) {
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cl.UseOTESystem()
-	cl.EnableDebugMode()
-	r := cl.Login()
-	if !r.IsSuccess() {
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("login200"), rtm.GetTemplate("OK"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.SetCredentials("myaccountid", "mypassword")
+	client.EnableDebugMode()
+	response := client.Login()
+	readCapturedCommand(t, commands)
+	if !response.IsSuccess() {
 		t.Error("TestLogout1: Expected response to be a success case.")
 	}
-	r = cl.Logout()
-	if !r.IsSuccess() {
+	response = client.Logout()
+	command := readCapturedCommand(t, commands)
+	if !strings.Contains(command, "COMMAND=StopSession") {
+		t.Errorf("TestLogout1: Expected StopSession command, got %q", command)
+	}
+	if !response.IsSuccess() {
 		t.Error("TestLogout1: Expected response to be a success case.")
+	}
+	if client.socketConfig.GetSession() != "" {
+		t.Error("TestLogout1: Expected client session to be empty.")
 	}
 }
 
 func TestSaveAndReuseSession(t *testing.T) {
 	// Initialize the first APIClient instance
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("login200"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.SetCredentials("myaccountid", "mypassword")
 	sessionobj := make(map[string]interface{})
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cl.Login()
-	cl.SaveSession(sessionobj)
+	client.Login()
+	readCapturedCommand(t, commands)
+	client.SaveSession(sessionobj)
 
 	// Initialize the second APIClient instance
 	cl2 := NewAPIClient()
@@ -355,6 +441,14 @@ func TestSaveAndReuseSession(t *testing.T) {
 // validate against mocked API response [200 < r.statusCode > 299, no debug] // need mocking
 
 func TestRequestNextResponsePage1(t *testing.T) { // nolint: gocyclo
+	rtm.AddTemplate(
+		"listP2",
+		"[RESPONSE]\r\nproperty[total][0] = 4\r\nproperty[first][0] = 2\r\nproperty[domain][0] = cnic-ssl-test3.com\r\nproperty[domain][1] = cnic-ssl-test4.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 3\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("listP2"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
 	r := R.NewResponse(
 		rtm.GetTemplate("listP0"),
 		map[string]string{
@@ -362,13 +456,14 @@ func TestRequestNextResponsePage1(t *testing.T) { // nolint: gocyclo
 			"LIMIT":   "2",
 		},
 	)
-	cl.UseOTESystem()
-	cl.DisableDebugMode()
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	nr, err := cl.RequestNextResponsePage(r)
+	nr, err := client.RequestNextResponsePage(r)
 	if err != nil {
 		t.Error(err)
 		t.Error("TestRequestNextResponsePage1: Expected not to run into error.")
+	}
+	command := readCapturedCommand(t, commands)
+	if !strings.Contains(command, "FIRST=2") {
+		t.Errorf("TestRequestNextResponsePage1: Expected FIRST=2 in command, got %q", command)
 	}
 	if !r.IsSuccess() {
 		t.Error("TestRequestNextResponsePage1: Expected response (r) to be a success case.")
@@ -422,102 +517,192 @@ func TestRequestNextResponsePage2(t *testing.T) {
 	}
 }
 
-func TestRequestNextResponsePage3(t *testing.T) { // nolint: gocyclo
+func TestRequestNextResponsePageUsesExistingFirst(t *testing.T) {
+	requestSeen := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		body, err := io.ReadAll(req.Body)
+		if err != nil {
+			t.Errorf("TestRequestNextResponsePageUsesExistingFirst: Expected request body to be readable: %v", err)
+			return
+		}
+		postData, err := url.ParseQuery(string(body))
+		if err != nil {
+			t.Errorf("TestRequestNextResponsePageUsesExistingFirst: Expected request body to parse: %v", err)
+			return
+		}
+		command := postData.Get("s_command")
+		if !strings.Contains(command, "FIRST=4") {
+			t.Errorf("TestRequestNextResponsePageUsesExistingFirst: Expected FIRST=4 in command, got %q", command)
+		}
+		requestSeen = true
+		if _, err := w.Write([]byte(rtm.GetTemplate("listP0"))); err != nil {
+			t.Errorf("TestRequestNextResponsePageUsesExistingFirst: Expected response body to be writable: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	rtm.AddTemplate(
+		"listP2",
+		"[RESPONSE]\r\nproperty[total][0] = 6\r\nproperty[first][0] = 2\r\nproperty[domain][0] = cnic-ssl-test3.com\r\nproperty[domain][1] = cnic-ssl-test4.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 3\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
 	r := R.NewResponse(
-		rtm.GetTemplate("listP0"),
+		rtm.GetTemplate("listP2"),
 		map[string]string{
 			"COMMAND": "QueryDomainList",
+			"FIRST":   "2",
 			"LIMIT":   "2",
 		},
 	)
-	nr, err := cl.RequestNextResponsePage(r)
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	_, err := client.RequestNextResponsePage(r)
 	if err != nil {
-		t.Error("TestRequestNextResponsePage3: Expected not to run into error.")
+		t.Errorf("TestRequestNextResponsePageUsesExistingFirst: Expected not to run into error: %v", err)
 	}
-	if !r.IsSuccess() {
+	if !requestSeen {
+		t.Error("TestRequestNextResponsePageUsesExistingFirst: Expected next page request to be sent.")
+	}
+}
+
+func TestRequestNextResponsePageZeroLimit(t *testing.T) {
+	rtm.AddTemplate(
+		"listLimitZero",
+		"[RESPONSE]\r\nproperty[count][0] = 0\r\nproperty[first][0] = 0\r\nproperty[last][0] = 0\r\nproperty[limit][0] = 0\r\nproperty[total][0] = 1725494\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.286\r\nEOF\r\n",
+	)
+	r := R.NewResponse(
+		rtm.GetTemplate("listLimitZero"),
+		map[string]string{
+			"COMMAND": "QueryDomainList",
+			"FIRST":   "0",
+			"LIMIT":   "0",
+		},
+	)
+	client := NewAPIClient()
+	_, err := client.RequestNextResponsePage(r)
+	if err == nil {
+		t.Error("TestRequestNextResponsePageZeroLimit: Expected error to avoid requesting the same page again.")
+	}
+}
+
+func TestRequestNextResponsePage3(t *testing.T) { // nolint: gocyclo
+	rtm.AddTemplate(
+		"listP2",
+		"[RESPONSE]\r\nproperty[total][0] = 4\r\nproperty[first][0] = 2\r\nproperty[domain][0] = cnic-ssl-test3.com\r\nproperty[domain][1] = cnic-ssl-test4.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 3\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("listP2"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	response := R.NewResponse(
+		rtm.GetTemplate("listP0"),
+		map[string]string{
+			"COMMAND": "QueryDomainList",
+			"FIRST":   "0",
+			"LIMIT":   "2",
+		},
+	)
+	nextResponse, err := client.RequestNextResponsePage(response)
+	if err != nil {
+		t.Fatalf("TestRequestNextResponsePage3: Expected not to run into error: %v", err)
+	}
+	command := readCapturedCommand(t, commands)
+	if !strings.Contains(command, "FIRST=2") {
+		t.Errorf("TestRequestNextResponsePage3: Expected FIRST=2 in command, got %q", command)
+	}
+	if !strings.Contains(command, "LIMIT=2") {
+		t.Errorf("TestRequestNextResponsePage3: Expected LIMIT=2 in command, got %q", command)
+	}
+	if !response.IsSuccess() {
 		t.Error("TestRequestNextResponsePage3: Expected response (r) to be a success case.")
 	}
-	if !nr.IsSuccess() {
+	if !nextResponse.IsSuccess() {
 		t.Error("TestRequestNextResponsePage3: Expected response (nr) to be a success case.")
 	}
-	if r.GetRecordsLimitation() != 2 {
+	if response.GetRecordsLimitation() != 2 {
 		t.Error("TestRequestNextResponsePage3: Expected limitation (r) not matching.")
 	}
-	if nr.GetRecordsLimitation() != 2 {
+	if nextResponse.GetRecordsLimitation() != 2 {
 		t.Error("TestRequestNextResponsePage3: Expected limitation (nr) not matching.")
 	}
-	if r.GetRecordsCount() != 2 {
+	if response.GetRecordsCount() != 2 {
 		t.Error("TestRequestNextResponsePage1: Expected count (r) not matching.")
 	}
-	if nr.GetRecordsCount() != 2 {
+	if nextResponse.GetRecordsCount() != 2 {
 		t.Error("TestRequestNextResponsePage1: Expected count (nr) not matching.")
 	}
-	f, err := r.GetFirstRecordIndex()
-	if err != nil || f != 0 {
+	firstIndex, err := response.GetFirstRecordIndex()
+	if err != nil || firstIndex != 0 {
 		t.Error("TestRequestNextResponsePage1: Expected first (r) not matching.")
 	}
-	l, err := r.GetLastRecordIndex()
-	if err != nil || l != 1 {
+	lastIndex, err := response.GetLastRecordIndex()
+	if err != nil || lastIndex != 1 {
 		t.Error("TestRequestNextResponsePage1: Expected last (r) not matching.")
 	}
-	f, err = nr.GetFirstRecordIndex()
-	if err != nil || f != 2 {
+	firstIndex, err = nextResponse.GetFirstRecordIndex()
+	if err != nil || firstIndex != 2 {
 		t.Error("TestRequestNextResponsePage1: Expected first (nr) not matching.")
 	}
-	l, err = nr.GetLastRecordIndex()
-	if err != nil || l != 3 {
+	lastIndex, err = nextResponse.GetLastRecordIndex()
+	if err != nil || lastIndex != 3 {
 		t.Error("TestRequestNextResponsePage1: Expected last (nr) not matching.")
 	}
 }
 
 func TestRequestAllResponsePages(t *testing.T) {
-	nr := cl.RequestAllResponsePages(map[string]string{
+	rtm.AddTemplate(
+		"listP2",
+		"[RESPONSE]\r\nproperty[total][0] = 4\r\nproperty[first][0] = 2\r\nproperty[domain][0] = cnic-ssl-test3.com\r\nproperty[domain][1] = cnic-ssl-test4.com\r\nproperty[count][0] = 2\r\nproperty[last][0] = 3\r\nproperty[limit][0] = 2\r\ndescription = Command completed successfully\r\ncode = 200\r\nqueuetime = 0\r\nruntime = 0.007\r\nEOF\r\n",
+	)
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("listP0"), rtm.GetTemplate("listP2"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	nr := client.RequestAllResponsePages(map[string]string{
 		"COMMAND": "QuerySSLCertList",
-		"FIRST":   "0",
-		"LIMIT":   "1000",
+		"LIMIT":   "2",
 	})
-	if len(nr) == 0 {
+	if len(nr) != 2 {
 		t.Error("TestRequestAllResponsePages: Expected count of pages not matching.")
+	}
+	firstCommand := readCapturedCommand(t, commands)
+	if !strings.Contains(firstCommand, "FIRST=0") {
+		t.Errorf("TestRequestAllResponsePages: Expected FIRST=0 in first command, got %q", firstCommand)
+	}
+	secondCommand := readCapturedCommand(t, commands)
+	if !strings.Contains(secondCommand, "FIRST=2") {
+		t.Errorf("TestRequestAllResponsePages: Expected FIRST=2 in second command, got %q", secondCommand)
 	}
 }
 
 func TestSetUserView(t *testing.T) {
-	cl.SetUserView("julia")
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cmd := map[string]interface{}{}
-	cmd["COMMAND"] = "StatusAccount"
-	r := cl.Request(cmd)
-	if !r.IsSuccess() {
-		t.Error("TestResetUserView: Expected response to be a success case.")
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("OK"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.SetUserView("julia")
+	response := client.Request(map[string]interface{}{
+		"COMMAND": "StatusAccount",
+	})
+	if !response.IsSuccess() {
+		t.Error("TestSetUserView: Expected response to be a success case.")
 	}
-	rec := r.GetRecord(0)
-	if rec == nil {
-		t.Error("TestLogin2: Expected record not to be nil.")
-	}
-	d, err := rec.GetDataByKey("REGISTRAR")
-	if err != nil {
-		t.Errorf("Failed to get data by key 'REGISTRAR': %v", err)
-	}
-	assert.Equal(t, "julia", d)
+	command := readCapturedCommand(t, commands)
+	assert.Contains(t, command, "SUBUSER=julia")
 }
 
 func TestResetUserView(t *testing.T) {
-	cl.SetUserView("julia")
-	cl.ResetUserView()
-	cl.SetCredentials(os.Getenv("CNR_TEST_USER"), os.Getenv("CNR_TEST_PASSWORD"))
-	cmd := map[string]interface{}{}
-	cmd["COMMAND"] = "StatusAccount"
-	r := cl.Request(cmd)
-	if !r.IsSuccess() {
+	server, commands := newCommandCaptureServer(t, rtm.GetTemplate("OK"))
+	defer server.Close()
+	client := NewAPIClient()
+	client.SetURL(server.URL)
+	client.SetUserView("julia")
+	client.ResetUserView()
+	response := client.Request(map[string]interface{}{
+		"COMMAND": "StatusAccount",
+	})
+	if !response.IsSuccess() {
 		t.Error("TestResetUserView: Expected response to be a success case.")
 	}
-	rec := r.GetRecord(0)
-	if rec == nil {
-		t.Error("TestLogin2: Expected record not to be nil.")
-	}
-	d, err := rec.GetDataByKey("REGISTRAR")
-	if err != nil {
-		t.Errorf("Failed to get data by key 'REGISTRAR': %v", err)
-	}
-	assert.NotEqual(t, "julia", d)
+	command := readCapturedCommand(t, commands)
+	assert.NotContains(t, command, "SUBUSER=")
 }

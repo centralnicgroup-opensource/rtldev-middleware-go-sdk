@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@team-internet/semantic-release-plugins@1.0.6'
