@@ -9,7 +9,15 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "^24.10.0 || ^26.0.0"
+    "node": "^24.15.0 || ^26.0.0",
+    "npm": ">=12.0.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.0.0",
+      "onFail": "error"
+    }
   },
   "homepage": "https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk",
   "repository": "github:centralnicgroup-opensource/rtldev-middleware-go-sdk.git",
