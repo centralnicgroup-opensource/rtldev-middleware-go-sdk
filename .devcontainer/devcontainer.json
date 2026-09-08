@@ -29,8 +29,19 @@
     "forwardPorts": [
         8080
     ],
+    // The bind below names a *file*, and Docker creates a missing bind source itself,
+    // as a directory — on the host, where it outlives the container. Without this
+    // touch, post-create.sh's symlink would point at a directory and zsh could not
+    // write a line of history. Runs on the host before the container is created, so
+    // it cannot live in post-create.sh. (RSRMID-3052)
+    "initializeCommand": "touch ${localEnv:HOME}/.zsh_history",
+    // Only the history file, never the host home. This used to mount ${localEnv:HOME}
+    // at /WSL_USER to reach that one file, which handed the container read-write reach
+    // over the host's SSH keys, credentials and every other repository on the machine.
+    // post-create.sh symlinks ~/.zsh_history to this path; this repository is not on
+    // the devbase Feature, so that script is what makes history persist here.
     "mounts": [
-		"source=${localEnv:HOME}${localEnv:USERPROFILE},target=/WSL_USER,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.zsh_history,target=/WSL_USER/.zsh_history,type=bind,consistency=cached"
 	],
     "postCreateCommand": "zsh ./.devcontainer/post-create.sh",
     "runArgs": ["--name", "rtldev-middleware-go-sdk"],
