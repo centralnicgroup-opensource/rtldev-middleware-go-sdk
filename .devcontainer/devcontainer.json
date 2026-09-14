@@ -1,49 +1,118 @@
 {
-    "name": "rtldev-middleware-go-sdk",
-    "build": {
-        "dockerfile": "Dockerfile"
+  // Everything shared with the other RTLDEV middleware repositories lives in the
+  // devbase Feature, not here: zsh with the team prompt, commitizen, pnpm, Node
+  // LTS, the GitHub CLI, the gh credential helper,
+  // persistent shell history, the shared VS Code extension set and the on-attach
+  // toolchain banner.
+  //
+  // What stays in this file is what a Feature cannot set — the name, the
+  // workspace paths, the remote user, initializeCommand and the host mounts —
+  // plus what is genuinely specific to *this* repository: the Go runtime.
+  //
+  // Feature options and troubleshooting:
+  // https://github.com/centralnicgroup-opensource/rtldev-middleware-devcontainer-features
+  "name": "dstack-gosdk",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+
+  // localWorkspaceFolderBasename is the repository directory name, so these two
+  // cannot drift apart from it or from each other.
+  //
+  // Unlike the other frames migrated alongside this one, this *moves* the
+  // workspace: the old file declared neither key, so the container mounted at the
+  // spec default /workspaces/rtldev-middleware-go-sdk. It is now
+  // /usr/share/rtldev-middleware-go-sdk, matching php-sdk and every other
+  // repository here. Nothing in this repository hardcodes either path — but a
+  // stale absolute path in someone's personal editor settings is the one thing
+  // that would notice.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/usr/share/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+  "workspaceFolder": "/usr/share/${localWorkspaceFolderBasename}",
+  "shutdownAction": "stopContainer",
+
+  // Host-side preflight for the binds at the bottom of this file: Docker creates
+  // a missing bind source itself, as a root-owned *directory*. For ~/.ssh and
+  // ~/.claude that yields a directory nobody in the container can write to; for
+  // ~/.gitconfig and ~/.zsh_history it yields a directory where a file is expected,
+  // on the host too, where the damage outlives the container.
+  // Runs on the host, so it cannot move into a Feature.
+  "initializeCommand": {
+    "claude-state": "mkdir -p ${localEnv:HOME}/.claude",
+    "ssh-dir": "mkdir -p ${localEnv:HOME}/.ssh",
+    "gitconfig": "touch ${localEnv:HOME}/.gitconfig",
+    "zsh-history": "touch ${localEnv:HOME}/.zsh_history"
+  },
+
+  "features": {
+    // The language this repository is written in stays with the repository.
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
     },
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "go.gopath": "/go",
-                "go.goroot": "/usr/local/go",
-                "terminal.integrated.defaultProfile.linux": "zsh",
-                "terminal.integrated.profiles.linux": {
-                    "zsh": {
-                        "path": "/bin/zsh"
-                    }
-                }
-            },
-            "extensions": [
-                "golang.go"
-            ]
-        }
-    },
-    "features": {
-        "ghcr.io/devcontainers/features/node:1": {
-            "version": "latest"
-        },
-        "ghcr.io/devcontainers/features/git:1": {}
-    },
-    "forwardPorts": [
-        8080
-    ],
-    // The bind below names a *file*, and Docker creates a missing bind source itself,
-    // as a directory — on the host, where it outlives the container. Without this
-    // touch, post-create.sh's symlink would point at a directory and zsh could not
-    // write a line of history. Runs on the host before the container is created, so
-    // it cannot live in post-create.sh. (RSRMID-3052)
-    "initializeCommand": "touch ${localEnv:HOME}/.zsh_history",
-    // Only the history file, never the host home. This used to mount ${localEnv:HOME}
-    // at /WSL_USER to reach that one file, which handed the container read-write reach
-    // over the host's SSH keys, credentials and every other repository on the machine.
-    // post-create.sh symlinks ~/.zsh_history to this path; this repository is not on
-    // the devbase Feature, so that script is what makes history persist here.
-    "mounts": [
-		"source=${localEnv:HOME}/.zsh_history,target=/WSL_USER/.zsh_history,type=bind,consistency=cached"
-	],
-    "postCreateCommand": "zsh ./.devcontainer/post-create.sh",
-    "runArgs": ["--name", "rtldev-middleware-go-sdk"],
-    "remoteUser": "vscode"
+
+    // The shared behaviour layer. It declares Node LTS and the GitHub CLI as its
+    // own dependencies, so neither is listed here. The Claude Code CLI was a third
+    // until devbase 2.0.0 dropped it — the VS Code extension runs its own bundled
+    // runtime (RSRMID-3053). Do NOT re-declare node:2 to change its version: one
+    // Feature id with two option sets counts as two Features under the spec's
+    // equality rule, so Node would install twice into the same nvm path.
+    //
+    // There is a package.json here (semantic-release and its plugins, for the
+    // release tooling — not product code), so the default project-dependency
+    // install is left on: it runs `pnpm install` on first create.
+    "ghcr.io/centralnicgroup-opensource/rtldev-middleware-devcontainer-features/devbase:2": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      // Go tooling only. devbase contributes the shared layer — GitHub Actions,
+      // GitHub PRs, Remote Containers, Containers, both Claude extensions,
+      // shellcheck / shell-format / vscode-yaml — plus the zsh terminal profile
+      // and the shellcheck/npm settings that go with them.
+      "extensions": ["golang.go"],
+      "settings": {
+        // These match where the go Feature actually installs the toolchain
+        // (GOROOT=/usr/local/go, GOPATH=/go) — carried over from before the
+        // migration rather than restated blind.
+        "go.gopath": "/go",
+        "go.goroot": "/usr/local/go"
+      }
+    }
+  },
+
+  "forwardPorts": [8080],
+  "remoteUser": "vscode",
+
+  // .ssh and .gitconfig make git work as it does on the host, both readonly: the
+  // container reads that identity, it does not maintain it. devbase writes its
+  // credential and signing config with `git config --local`, never `--global`,
+  // exactly so the host's file stays untouched, so readonly costs nothing here.
+  // /WSL_USER/.zsh_history is the single file devbase's history persistence
+  // reads; .claude carries the Claude Code session
+  // state. This frame already bound that one file, narrowly, from RSRMID-3052 —
+  // what is new here is the .ssh, .gitconfig and .claude entries devbase's shared
+  // behaviour also needs.
+  //
+  // The history entry binds that one file and never the host home. Mounting
+  // ${localEnv:HOME} at /WSL_USER to reach a single file inside it handed the
+  // container read-write reach over the host's SSH keys, credentials and every
+  // other repository on the machine — and in the workspace repository it made the
+  // readonly flag on the GitHub tokens decorative, since the same inodes were
+  // writable by that second path. (RSRMID-3052)
+  //
+  // Narrowing it also retired the ${localEnv:HOME}${localEnv:USERPROFILE}
+  // concatenation, which resolved to neither path on a host defining both and left
+  // Docker mounting an empty directory. A single-file bind needs the host file to
+  // exist first instead — see the touch in initializeCommand above.
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.zsh_history,target=/WSL_USER/.zsh_history,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
+  ],
+
+  // go mod tidy is this repository's own dependency story on top of what devbase
+  // installs; runs after devbase's own post-create, so the toolchain is already
+  // in place.
+  "postCreateCommand": "zsh .devcontainer/post-create.sh"
 }

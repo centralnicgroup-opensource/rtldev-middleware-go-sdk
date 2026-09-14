@@ -1,13 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env zsh
+# shellcheck shell=bash
+# Runs after the devbase Feature's own post-create. Everything the previous
+# version of this script did besides this -- installing commitizen globally,
+# symlinking ~/.zsh_history out of /WSL_USER, writing ~/.czrc -- is devbase's
+# job or a host mount now.
+set -e
 
-# Link WSL bash_history to bash_history
-ln -sf /WSL_USER/.zsh_history ~/.zsh_history
-
-# Install commitizen globally
-npm install -g commitizen
-
-# Run go mod tidy
+echo "=> Running go mod tidy"
 go mod tidy
-
-# Add configuration to .czrc for commitizen
-echo '{"path": "cz-conventional-changelog"}' >> ~/.czrc
