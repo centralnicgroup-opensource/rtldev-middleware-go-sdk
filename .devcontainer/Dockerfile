@@ -1,29 +1,16 @@
-FROM ghcr.io/scop/bash-completion/test:centos7 AS bash_completion
-FROM mcr.microsoft.com/devcontainers/go:latest
+# Development image for this repository.
+#
+# Deliberately thin. The apt block, timezone, zsh configuration (prompt,
+# autosuggestions) and commitizen setup that used to live here are now in the
+# devbase Feature:
+# https://github.com/centralnicgroup-opensource/rtldev-middleware-devcontainer-features
+#
+# Go comes from the go devcontainer Feature, declared in devcontainer.json, so
+# this file pins no language image either.
 
-RUN apt-get update && apt-get install -y \
-    bash-completion \
-    && rm -rf /var/lib/apt/lists/*
+FROM mcr.microsoft.com/devcontainers/base:2-ubuntu-24.04
 
-# Set a default value for ZSH_CUSTOM if it's not already set
-ENV ZSH_CUSTOM=/home/vscode/.oh-my-zsh/custom
-
-# Clone the powerlevel10k theme for zsh and change owner
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k \
-    && chown -R vscode:vscode $ZSH_CUSTOM/themes/powerlevel10k
-
-# Clone the zsh-autosuggestions repository and change owner
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions \
-    && chown -R vscode:vscode $ZSH_CUSTOM/plugins/zsh-autosuggestions
-
-COPY --chown=vscode:vscode configurations/.p10k.zsh /home/vscode/.p10k.zsh
-
-COPY --chown=vscode:vscode configurations/.zshrc /home/vscode/.zshrc
-
-COPY --chown=vscode:vscode configurations/p10k-instant-prompt-vscode.zsh /home/vscode/.cache/p10k-instant-prompt-vscode.zsh
-
-# Set the default shell to Zsh
-SHELL ["/bin/zsh", "-c"]
-
-# Start a simple loop to keep the container running
-CMD ["zsh", "-c", "while true; do sleep 3600; done"]
+# No ENV DEBIAN_FRONTEND here on purpose: set at image level it persists into the
+# running container, so an interactive `apt` in a shell session also loses its
+# frontend. A layer that needs it sets it for itself.
+ENV TERM=xterm-256color
