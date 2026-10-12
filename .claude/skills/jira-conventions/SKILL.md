@@ -3,6 +3,7 @@ name: jira-conventions
 description: "RSRMID Jira conventions — the fields every issue needs (Work Category, Business Unit, Team, Components), this repository's `[COMPONENT][BU]: ` title prefix, choosing the parent epic, the Markdown description format, and the worklog rule for Done and Cancelled. Load before creating, editing, or transitioning a Jira issue."
 ---
 
+<!-- markdownlint-disable -->
 <!-- prettier-ignore-start -->
 
 # Atlassian / JIRA
@@ -34,9 +35,8 @@ copies byte-identical under every repository's own prettier config.
 - **Transitions** (global, available from any status): To Do (`11`), In Progress (`21`),
   In Review (`41`), Q&A (`61`), Ready for Deployment (`51`), Done (`31`), Stand-by (`71`),
   Cancelled (`91`)
-- **Known account IDs:** Kai Schwarz `61358848ee2fd0006aac7b4f`, Asif Nawaz
-  `62a84362bf7afc006f3b15e5`, Sebastian Vassiliou `613595d10016a700695b4e43`; anyone else
-  via `lookupJiraAccountId`
+- **Account IDs** (assignee, mentions): look them up with `lookupJiraAccountId` by name;
+  never write one into a repository file — most of these repositories are public
 
 ## Fields to Set on Every Issue
 
