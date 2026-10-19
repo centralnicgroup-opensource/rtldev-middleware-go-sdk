@@ -1,3 +1,10 @@
+## [5.0.24](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.23...v5.0.24) (2026-10-19)
+
+
+### Bug Fixes
+
+* **idna:** keep ß for the TLDs that require non-transitional processing ([365fca1](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/commit/365fca1dc9f50bc049a3d0576ca63f58c3425af8))
+
 ## [5.0.23](https://github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/compare/v5.0.22...v5.0.23) (2026-10-14)
 
 
