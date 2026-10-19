@@ -33,7 +33,13 @@ func TestConvert(t *testing.T) {
 		{
 			domain: "faß.de",
 			expected: []Row{
-				{IDN: "faß.de", PUNYCODE: "fass.de"},
+				{IDN: "faß.de", PUNYCODE: "xn--fa-hia.de"},
+			},
+		},
+		{
+			domain: "faß.com",
+			expected: []Row{
+				{IDN: "faß.com", PUNYCODE: "fass.com"},
 			},
 		},
 		{
@@ -214,4 +220,47 @@ func TestToUnicode(t *testing.T) {
 		result := idntranslator.ToUnicode(domain, transitionalProcessing)
 		assert.Equal(t, idn, result)
 	}
+}
+
+func TestToASCIIDefaultProcessingByTLD(t *testing.T) {
+	// Default (no explicit argument): transitional for every TLD but the listed ones.
+	assert.Equal(t, "fass.com", idntranslator.ToASCII("faß.com"))
+
+	// The listed TLDs keep ß.
+	for _, tld := range []string{"art", "be", "ca", "de", "swiss", "fr", "pm", "re", "tf", "wf", "yt"} {
+		assert.Equal(t, "xn--fa-hia."+tld, idntranslator.ToASCII("faß."+tld), tld)
+	}
+
+	// Case-insensitive.
+	assert.Equal(t, "xn--fa-hia.de", idntranslator.ToASCII("faß.DE"))
+
+	// The match is anchored to the last label.
+	assert.Equal(t, "fass.de.com", idntranslator.ToASCII("faß.de.com"))
+	assert.Equal(t, "fass.dealer", idntranslator.ToASCII("faß.dealer"))
+	assert.Equal(t, "fass.design", idntranslator.ToASCII("faß.design"))
+
+	// An explicit argument overrides the TLD policy.
+	assert.Equal(t, "fass.de", idntranslator.ToASCII("faß.de", true))
+	assert.Equal(t, "xn--fa-hia.com", idntranslator.ToASCII("faß.com", false))
+}
+
+func TestConvertDefaultProcessingByTLD(t *testing.T) {
+	// ToUnicode never maps ß (x/net forces non-transitional there), so IDN keeps it.
+	assert.Equal(t, []Row{{IDN: "faß.com", PUNYCODE: "fass.com"}}, toTestRows(idntranslator.Convert("faß.com")))
+	assert.Equal(t, []Row{{IDN: "faß.de", PUNYCODE: "xn--fa-hia.de"}}, toTestRows(idntranslator.Convert("faß.DE")))
+	assert.Equal(t, []Row{{IDN: "faß.de.com", PUNYCODE: "fass.de.com"}}, toTestRows(idntranslator.Convert("faß.de.com")))
+	assert.Equal(t, []Row{{IDN: "faß.dealer", PUNYCODE: "fass.dealer"}}, toTestRows(idntranslator.Convert("faß.dealer")))
+
+	for _, tld := range []string{"art", "be", "ca", "de", "swiss", "fr", "pm", "re", "tf", "wf", "yt"} {
+		assert.Equal(t, []Row{{IDN: "faß." + tld, PUNYCODE: "xn--fa-hia." + tld}},
+			toTestRows(idntranslator.Convert("faß."+tld)), tld)
+	}
+}
+
+func toTestRows(rows []idntranslator.Row) []Row {
+	out := make([]Row, len(rows))
+	for i, r := range rows {
+		out[i] = Row{IDN: r.IDN, PUNYCODE: r.PUNYCODE}
+	}
+	return out
 }

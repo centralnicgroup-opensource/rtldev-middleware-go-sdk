@@ -97,16 +97,23 @@ func decodeUnicodeEscapes(unicodeString string) string {
 	return normalized
 }
 
-// isTransitionalProcessing checks if the provided top-level domain (TLD) is non-transitional.
+// nonTransitionalTLDs lists the TLDs whose registries require non-transitional IDNA
+// processing, i.e. deviation characters (ß, ς, ZWJ, ZWNJ) are kept. Mirrors idna-uts46.
+var nonTransitionalTLDs = []string{"art", "be", "ca", "de", "swiss", "fr", "pm", "re", "tf", "wf", "yt"}
+
+// nonTransitionalTLDRegex matches a domain whose last label (optionally followed by a
+// trailing dot) is one of nonTransitionalTLDs.
+var nonTransitionalTLDRegex = regexp.MustCompile(`\.(` + strings.Join(nonTransitionalTLDs, "|") + `)\.?$`)
+
+// isTransitionalProcessing reports whether transitional processing applies to keyword.
+// An explicit transitionalProcessing argument always wins. Otherwise processing is
+// non-transitional for the TLDs in nonTransitionalTLDs and transitional for all others.
 func isTransitionalProcessing(keyword string, transitionalProcessing ...bool) bool {
 	if len(transitionalProcessing) > 0 {
 		return transitionalProcessing[0]
 	}
 
-	transitionalTLDs := []string{"art", "be", "ca", "de", "fr", "pm", "re", "swiss", "tf", "wf", "yt"}
-	regex := `\.(` + strings.Join(transitionalTLDs, "|") + `)\.?`
-	re := regexp.MustCompile(regex)
-	return re.MatchString(strings.ToLower(keyword))
+	return !nonTransitionalTLDRegex.MatchString(strings.ToLower(keyword))
 }
 
 // encodeHexToUnicode encodes hexadecimal escape sequences to Unicode escape sequences in a string.
