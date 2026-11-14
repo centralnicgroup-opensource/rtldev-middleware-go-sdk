@@ -55,6 +55,6 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "semantic-release": "^25.0.9",
-    "@team-internet/semantic-release-plugins": "^1.0.6"
+    "@team-internet/semantic-release-plugins": "^2.5.2"
   }
 }
